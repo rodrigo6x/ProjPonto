@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
+// Removi o 'Platform' e o 'Picker' dos imports
 import { View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { inserirUsuario, atualizarUsuario } from '../db/database';
+
+// --- FUNÇÃO PARA GERAR MATRÍCULA ---
+// Gera 4 dígitos aleatórios (0000-9999) e 1 dígito (0-9)
+function gerarMatricula() {
+  // padStart(4, '0') garante que se o número for '12', ele vira '0012'
+  const parte1 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+  const parte2 = String(Math.floor(Math.random() * 10));
+  return `${parte1}-${parte2}`;
+}
 
 export default function CadastroScreen({ navigation, route }) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [funcao, setFuncao] = useState('');
   const [cpf, setCpf] = useState('');
-  const [matricula, setMatricula] = useState('');
-  const [filialMatriz, setFilialMatriz] = useState('Filial'); // valor inicial
-  const [turno, setTurno] = useState('Manhã'); // valor inicial
+  const [matricula, setMatricula] = useState(''); // Continua no state para modo de edição
+  
+  // Alterado para começar vazio, já que agora é um TextInput
+  const [filialMatriz, setFilialMatriz] = useState(''); 
+  const [turno, setTurno] = useState(''); 
 
   const [modoEdicao, setModoEdicao] = useState(false);
   const [usuarioId, setUsuarioId] = useState(null);
@@ -21,10 +33,10 @@ export default function CadastroScreen({ navigation, route }) {
       setNome(usuario.nome);
       setEmail(usuario.email);
       setFuncao(usuario.funcao);
-      setCpf(usuario.cpf);
-      setMatricula(usuario.matricula);
-      setFilialMatriz(usuario.filialMatriz || 'Filial');
-      setTurno(usuario.turno || 'Manhã');
+      setCpf(String(usuario.cpf)); // Garante que é string para o TextInput
+      setMatricula(String(usuario.matricula)); // Garante que é string
+      setFilialMatriz(usuario.filialMatriz || '');
+      setTurno(usuario.turno || '');
       setUsuarioId(usuario.id);
       setModoEdicao(true);
     }
@@ -33,22 +45,27 @@ export default function CadastroScreen({ navigation, route }) {
   const handleNomeChange = (text) => setNome(text.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toUpperCase());
   const handleFuncaoChange = (text) => setFuncao(text.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toUpperCase());
   const handleCpfChange = (text) => setCpf(text.replace(/[^0-9]/g, ''));
-  const handleMatriculaChange = (text) => setMatricula(text.replace(/[^0-9]/g, ''));
+  // Função handleMatriculaChange removida, pois não é mais digitada
 
   const enviarDados = async () => {
-    if (!nome || !email || !funcao || !cpf || !matricula || !filialMatriz || !turno) {
+    // Matrícula foi removida da validação, pois é gerada auto
+    if (!nome || !email || !funcao || !cpf || !filialMatriz || !turno) {
       alert('Por favor, preencha todos os campos!');
       return;
     }
     try {
       if (modoEdicao) {
+        // Modo Edição: Usa a matrícula que já está no state (não altera)
         await atualizarUsuario(usuarioId, nome, email, funcao, cpf, matricula, filialMatriz, turno);
         alert('Usuário atualizado com sucesso!');
       } else {
-        await inserirUsuario(nome, email, funcao, cpf, matricula, filialMatriz, turno);
+        // Modo Cadastro: Gera uma nova matrícula ANTES de inserir
+        const novaMatricula = gerarMatricula(); 
+        
+        await inserirUsuario(nome, email, funcao, cpf, novaMatricula, filialMatriz, turno);
         alert('Usuário cadastrado com sucesso!');
       }
-      navigation.navigate('Consulta');
+      navigation.navigate('Consulta'); // Volta para a consulta
     } catch (error) {
       alert(`Erro ao ${modoEdicao ? 'atualizar' : 'cadastrar'} usuário: ${error.message}`);
     }
@@ -90,14 +107,18 @@ export default function CadastroScreen({ navigation, route }) {
         keyboardType="numeric"
       />
 
-      <Text style={styles.label}>Matrícula:</Text>
-      <TextInput
-        style={styles.input}
-        value={matricula}
-        onChangeText={handleMatriculaChange}
-        placeholder="Digite sua matrícula"
-        keyboardType="numeric"
-      />
+      {/* --- CAMPO MATRÍCULA MODIFICADO --- */}
+      {/* Só mostra o campo Matrícula se estiver em modo de edição */}
+      {modoEdicao && (
+        <>
+          <Text style={styles.label}>Matrícula:</Text>
+          <TextInput
+            style={[styles.input, styles.inputDisabled]} // Estilo de campo desabilitado
+            value={matricula}
+            editable={false} // Impede a edição
+          />
+        </>
+      )}
 
       <Text style={styles.label}>Filial / Matriz:</Text>
       <View style={styles.pickerContainer}>
@@ -141,13 +162,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 5
   },
-  pickerContainer: {
+    pickerContainer: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 20,
     overflow: Platform.OS === 'android' ? 'hidden' : 'visible'
   },
+  // --- NOVO ESTILO ---
+  inputDisabled: {
+    backgroundColor: '#f0f0f0', // Um cinza claro para indicar que está desabilitado
+    color: '#888',
+  },
+  // Removi o pickerContainer dos estilos
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

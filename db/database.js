@@ -3,35 +3,67 @@ import * as SQLite from 'expo-sqlite';
 
 let db;
 
+function getDB() {
+    if (!db) db = SQLite.openDatabase('projetoponto4.db');
+    return db;
+}
+
+function executeSqlAsync(sql, params = []) {
+    return new Promise((resolve, reject) => {
+        const database = getDB();
+        database.transaction(
+            tx => {
+                tx.executeSql(
+                    sql,
+                    params,
+                    (_, result) => resolve(result),
+                    (_, error) => {
+                        // erro na execução do SQL
+                        reject(error);
+                        return false;
+                    }
+                );
+            },
+            transactionError => reject(transactionError)
+        );
+    });
+}
+
 /**
  * INICIALIZAR BANCO DE DADOS
- * Inicializa o banco de dados SQLite 
  */
 export async function initDB() {
     try {
-        if (!db) {
-            db = await SQLite.openDatabaseAsync('projetoponto3.db');
+        // garante que DB está aberto
+        getDB();
 
-            await db.execAsync(`
-                CREATE TABLE IF NOT EXISTS usuarios (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nome TEXT NOT NULL,
-                    email TEXT NOT NULL,
-                    funcao TEXT NOT NULL,
-                    cpf TEXT NOT NULL
-                );
-            `);
-        }
+        // cria tabela se não existir
+        await executeSqlAsync(`
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                email TEXT NOT NULL,
+                funcao TEXT NOT NULL,
+                cpf TEXT NOT NULL,
+                matricula TEXT NULL,
+                filialMatriz TEXT NULL,
+                turno TEXT NULL
+            );
+        `);
+
         // Cria admin padrão se não existir
         const adminEmail = 'administrador';
         const adminCpf = 'admin';
         const adminFuncao = 'admin';
         const adminNome = 'Administrador';
-        const result = await db.getAllAsync('SELECT * FROM usuarios WHERE email = ?;', [adminEmail]);
-        if (result.length === 0) {
-            await db.runAsync(
-                'INSERT INTO usuarios (nome, email, funcao, cpf) VALUES (?, ?, ?, ?);',
-                [adminNome, adminEmail, adminFuncao, adminCpf]
+
+        const selectRes = await executeSqlAsync('SELECT * FROM usuarios WHERE email = ?;', [adminEmail]);
+        const rows = selectRes.rows && selectRes.rows._array ? selectRes.rows._array : [];
+        if (rows.length === 0) {
+            // passar valores nulos para os campos opcionais
+            await executeSqlAsync(
+                'INSERT INTO usuarios (nome, email, funcao, cpf, matricula, filialMatriz, turno) VALUES (?, ?, ?, ?, ?, ?, ?);',
+                [adminNome, adminEmail, adminFuncao, adminCpf, null, null, null]
             );
         }
     } catch (error) {
@@ -42,17 +74,16 @@ export async function initDB() {
 
 /**
  * INSERIR USUÁRIO
- * Adiciona um novo usuário ao banco de dados
  */
-export async function inserirUsuario(nome, email, funcao, cpf) {
+export async function inserirUsuario(nome, email, funcao, cpf, matricula, filialMatriz, turno) {
     try {
-        if (!db) await initDB();
+        await initDB();
 
-        const result = await db.runAsync(
-            'INSERT INTO usuarios (nome, email, funcao, cpf) VALUES (?, ?, ?, ?);',
-            [nome, email, funcao, cpf]
+        const res = await executeSqlAsync(
+            'INSERT INTO usuarios (nome, email, funcao, cpf, matricula, filialMatriz, turno) VALUES (?, ?, ?, ?, ?, ?, ?);',
+            [nome, email, funcao, cpf, matricula, filialMatriz, turno]
         );
-        return result;
+        return res; // contém insertId e rowsAffected dependendo da plataforma
     } catch (error) {
         console.error('Erro ao inserir usuario:', error);
         throw error;
@@ -61,29 +92,26 @@ export async function inserirUsuario(nome, email, funcao, cpf) {
 
 /**
  * LISTAR USUÁRIOS
- * Retorna todos os usuários do banco de dados
  */
 export async function listarUsuarios() {
     try {
-        if (!db) await initDB();
-
-        const result = await db.getAllAsync('SELECT * FROM usuarios;');
-        return result;
+        await initDB();
+        const res = await executeSqlAsync('SELECT * FROM usuarios;');
+        return res.rows && res.rows._array ? res.rows._array : [];
     } catch (error) {
         console.error('Erro ao listar usuarios:', error);
         throw error;
     }
 }
 
-export async function atualizarUsuario(id, nome, email, funcao, cpf) {
+export async function atualizarUsuario(id, nome, email, funcao, cpf, matricula, filialMatriz, turno) {
     try {
-        if (!db) await initDB();
-
-        const result = await db.runAsync(
-            'UPDATE usuarios SET nome = ?, email = ?, funcao = ?, cpf = ? WHERE id = ?;',
-            [nome, email, funcao, cpf, id]
+        await initDB();
+        const res = await executeSqlAsync(
+            'UPDATE usuarios SET nome = ?, email = ?, funcao = ?, cpf = ?, matricula = ?, filialMatriz = ?, turno = ? WHERE id = ?;',
+            [nome, email, funcao, cpf, matricula, filialMatriz, turno, id]
         );
-        return result;
+        return res;
     } catch (error) {
         console.error('Erro ao atualizar usuario:', error);
         throw error;
@@ -91,18 +119,31 @@ export async function atualizarUsuario(id, nome, email, funcao, cpf) {
 }
 
 /**
+ * BUSCAR USUÁRIOS
+ */
+export async function buscarUsuarios(termo) {
+    try {
+        await initDB();
+        const termoBusca = `${termo}%`;
+        const res = await executeSqlAsync(
+            'SELECT * FROM usuarios WHERE nome LIKE ? OR matricula LIKE ? OR cpf LIKE ?;',
+            [termoBusca, termoBusca, termoBusca]
+        );
+        return res.rows && res.rows._array ? res.rows._array : [];
+    } catch (error) {
+        console.error('Erro ao buscar usuarios:', error);
+        throw error;
+    }
+}
+
+/**
  * DELETAR USUÁRIO
- * Remove um usuário específico do banco de dados
  */
 export async function deletarUsuario(id) {
     try {
-        if (!db) await initDB();
-
-        const result = await db.runAsync(
-            'DELETE FROM usuarios WHERE id = ?;',
-            [id]
-        );
-        return result;
+        await initDB();
+        const res = await executeSqlAsync('DELETE FROM usuarios WHERE id = ?;', [id]);
+        return res;
     } catch (error) {
         console.error('Erro ao deletar usuario:', error);
         throw error;

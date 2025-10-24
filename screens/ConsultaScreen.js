@@ -1,28 +1,44 @@
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
-import { listarUsuarios, deletarUsuario } from '../db/database';
+// Adicionei o TextInput
+import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity, TextInput } from 'react-native';
+// Adicionei a nova função 'buscarUsuarios' que você vai criar no database.js
+import { listarUsuarios, deletarUsuario, buscarUsuarios } from '../db/database';
 
 export default function ConsultaScreen({ navigation }) {
     const [usuarios, setUsuarios] = useState([]);
+    const [termoBusca, setTermoBusca] = useState(''); // State para o texto da busca
 
-    const carregarUsuarios = async () => {
+    /**
+     * Função de carregar usuários modificada.
+     * Agora ela pode buscar todos ou filtrar por um termo.
+     */
+    const carregarUsuarios = async (termo = '') => {
         try {
-            const listaUsuarios = await listarUsuarios();
+            let listaUsuarios;
+            if (termo.trim().length > 0) {
+                // Se tem termo, busca no banco
+                listaUsuarios = await buscarUsuarios(termo);
+            } else {
+                // Se não tem termo, lista todos
+                listaUsuarios = await listarUsuarios();
+            }
             setUsuarios(listaUsuarios);
         } catch (error) {
             console.error('Erro ao carregar usuários:', error);
         }
     };
 
+    // Este useEffect agora é o "listener" da busca
+    // Ele roda toda vez que o 'termoBusca' muda
     useEffect(() => {
-        carregarUsuarios();
-    }, []);
+        carregarUsuarios(termoBusca);
+    }, [termoBusca]);
 
-    // useEffect - Função para atualizar a lista de usuários
+    // useEffect - Função para atualizar a lista quando a tela foca
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
-            carregarUsuarios();
+            setTermoBusca(''); // Limpa o campo de busca
+            carregarUsuarios(); // Carrega a lista completa
         });
         return unsubscribe;
     }, [navigation]);
@@ -44,7 +60,8 @@ export default function ConsultaScreen({ navigation }) {
         try {
             await deletarUsuario(id);
             alert('Usuário deletado com sucesso!');
-            carregarUsuarios();
+            // Recarrega a lista baseada no termo de busca atual
+            carregarUsuarios(termoBusca); 
         } catch (error) {
             alert('Erro ao deletar usuário: ' + error.message);
         }
@@ -58,14 +75,16 @@ export default function ConsultaScreen({ navigation }) {
         });
     };
 
-    // Função para renderizar os usuários
+    // Função para renderizar os usuários (ATUALIZEI AQUI)
+    // Mostrando os dados relevantes para a busca
     const renderItem = ({ item }) => (
         <View style={styles.itemContainer}>
             <View style={styles.infoContainer}>
                 <Text style={styles.nome}>{item.nome}</Text>
-                <Text style={styles.email}>{item.email}</Text>
-                <Text style={styles.telefone}>{item.telefone}</Text>
-                <Text style={styles.cpf}>{item.cpf}</Text>
+                {/* Ajustei para mostrar dados mais úteis do seu banco */}
+                <Text style={styles.infoText}>Matrícula: {item.matricula}</Text>
+                <Text style={styles.infoText}>Função: {item.funcao}</Text>
+                <Text style={styles.infoText}>CPF: {item.cpf}</Text>
             </View>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
@@ -87,6 +106,15 @@ export default function ConsultaScreen({ navigation }) {
     return (
         <View style={styles.container}>
             <Text style={styles.titulo}>Lista de Usuários</Text>
+            
+            {/* --- CAMPO DE BUSCA ADICIONADO --- */}
+            <TextInput
+                style={styles.inputBusca}
+                placeholder="Buscar por nome, matrícula ou CPF..."
+                value={termoBusca}
+                onChangeText={setTermoBusca} // Atualiza o state 'termoBusca' a cada letra digitada
+            />
+
             <Button
                 title="Cadastrar Usuario"
                 onPress={() => navigation.navigate('Cadastro')}
@@ -97,13 +125,14 @@ export default function ConsultaScreen({ navigation }) {
                 renderItem={renderItem}
                 keyExtractor={item => item.id.toString()}
                 ListEmptyComponent={
-                    <Text style={styles.emptyText}>Nenhum usuário cadastrado</Text>
+                    <Text style={styles.emptyText}>Nenhum usuário encontrado</Text>
                 }
             />
         </View>
     );
 }
 
+// --- ESTILOS ATUALIZADOS ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -116,6 +145,17 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: 'center',
         marginTop: 20
+    },
+    // --- Estilo para o campo de busca ---
+    inputBusca: {
+        height: 45,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        marginBottom: 15,
+        backgroundColor: 'white',
+        fontSize: 16
     },
     itemContainer: {
         backgroundColor: 'white',
@@ -135,15 +175,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 5
     },
-    email: {
+    // --- Estilo genérico para os outros textos ---
+    infoText: {
         fontSize: 16,
         color: '#666',
-        marginBottom: 2
+        marginBottom: 3
     },
-    telefone: {
-        fontSize: 16,
-        color: '#666'
-    },
+    // Removi os estilos 'email' e 'telefone' que não estavam sendo usados
     buttonContainer: {
         flexDirection: 'row',
         gap: 10

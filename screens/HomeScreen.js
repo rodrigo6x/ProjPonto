@@ -2,6 +2,16 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const HomeScreen = ({ navigation }) => {
+
+  const handleLogout = () => {
+    // Usamos 'reset' para limpar o histórico de navegação e voltar ao Login
+    // IMPORTANTE: Substitua 'Login' pelo nome exato da sua rota de Login
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }], 
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bem-vindo!</Text>
@@ -12,6 +22,17 @@ const HomeScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta')}>
         <Text style={styles.buttonText}>Consulta Cadastro</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Ponto')}>
+        <Text style={styles.buttonText}>Ponto</Text>
+      </TouchableOpacity>
+      {/* --- Botão Sair Adicionado --- */}
+      <TouchableOpacity 
+        style={[styles.button, styles.logoutButton]} // Adiciona um estilo extra (vermelho)
+        onPress={handleLogout} // Chama a função de logout
+      >
+        <Text style={styles.buttonText}>Sair</Text>
+      </TouchableOpacity>
+
     </View>
   );
 };
@@ -47,6 +68,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  // --- Estilo novo para o botão de sair ---
+  logoutButton: {
+    backgroundColor: '#D32F2F', // Um tom de vermelho para diferenciar
   },
 });
 
