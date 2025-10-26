@@ -19,9 +19,11 @@ const HomeScreen = ({ navigation, route }) => {
       <Text style={styles.subtitle}>Escolha uma opção:</Text>
 
       {/* Mostrar todos os botões para qualquer usuário */}
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro', { usuario })}>
-        <Text style={styles.buttonText}>Cadastro</Text>
-      </TouchableOpacity>
+      {usuario.funcao === 'admin' && (
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro', { usuario })}>
+          <Text style={styles.buttonText}>Cadastro</Text>
+        </TouchableOpacity>
+      )}
       
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta', { usuario })}>
         <Text style={styles.buttonText}>Consulta</Text>
