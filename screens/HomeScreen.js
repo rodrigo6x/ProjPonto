@@ -1,14 +1,15 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, route }) => {
+  // Recebe o usuário vindo do login
+  const usuario = route?.params?.usuario || null;
 
   const handleLogout = () => {
     // Usamos 'reset' para limpar o histórico de navegação e voltar ao Login
-    // IMPORTANTE: Substitua 'Login' pelo nome exato da sua rota de Login
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Login' }], 
+      routes: [{ name: 'Login' }],
     });
   };
 
@@ -16,19 +17,24 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Bem-vindo!</Text>
       <Text style={styles.subtitle}>Escolha uma opção:</Text>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro')}>
+
+      {/* Mostrar todos os botões para qualquer usuário */}
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro', { usuario })}>
         <Text style={styles.buttonText}>Cadastro</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta')}>
-        <Text style={styles.buttonText}>Consulta Cadastro</Text>
+      
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta', { usuario })}>
+        <Text style={styles.buttonText}>Consulta</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Ponto')}>
+      
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Ponto', { usuario })}>
         <Text style={styles.buttonText}>Ponto</Text>
       </TouchableOpacity>
-      {/* --- Botão Sair Adicionado --- */}
+
+      {/* --- Botão Sair --- */}
       <TouchableOpacity 
-        style={[styles.button, styles.logoutButton]} // Adiciona um estilo extra (vermelho)
-        onPress={handleLogout} // Chama a função de logout
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogout}
       >
         <Text style={styles.buttonText}>Sair</Text>
       </TouchableOpacity>

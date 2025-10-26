@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CadastroScreen from './screens/CadastroScreen';
@@ -6,11 +6,26 @@ import ConsultaScreen from './screens/ConsultaScreen';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import PontoScreen from './screens/PontoScreen';
+import { initDB } from './db/database';
 
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  // Inicializa o banco de dados quando o app inicia
+  useEffect(() => {
+    const initializeDatabase = async () => {
+      try {
+        await initDB();
+        console.log('Banco de dados inicializado com sucesso!');
+      } catch (error) {
+        console.error('Erro ao inicializar banco de dados:', error);
+      }
+    };
+    
+    initializeDatabase();
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">

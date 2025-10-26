@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-// Removi o 'Platform' e o 'Picker' dos imports
-import { View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native';
+// Usamos SafeAreaView, ScrollView e KeyboardAvoidingView para permitir scroll e evitar teclado
+import { SafeAreaView, KeyboardAvoidingView, ScrollView, View, Text, TextInput, Button, StyleSheet, Platform, BackHandler } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { inserirUsuario, atualizarUsuario } from '../db/database';
 
@@ -16,13 +16,13 @@ function gerarMatricula() {
 export default function CadastroScreen({ navigation, route }) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
-  const [funcao, setFuncao] = useState('');
   const [cpf, setCpf] = useState('');
   const [matricula, setMatricula] = useState(''); // Continua no state para modo de edição
   
-  // Alterado para começar vazio, já que agora é um TextInput
-  const [filialMatriz, setFilialMatriz] = useState(''); 
-  const [turno, setTurno] = useState(''); 
+  // Valores iniciais para os Pickers
+  const [filialMatriz, setFilialMatriz] = useState('Filial'); 
+  const [turno, setTurno] = useState('Manhã'); 
+  const [funcao, setFuncao] = useState('RH'); // Valor inicial RH
 
   const [modoEdicao, setModoEdicao] = useState(false);
   const [usuarioId, setUsuarioId] = useState(null);
@@ -41,6 +41,20 @@ export default function CadastroScreen({ navigation, route }) {
       setModoEdicao(true);
     }
   }, [route?.params]);
+
+  // Intercepta botão físico 'Voltar' no Android quando em modo de edição
+  useEffect(() => {
+    if (!modoEdicao) return; // só bloquear quando estiver editando
+
+    const onBackPress = () => {
+      // Retorna true para indicar que consumimos o evento e evitar sair
+      // Você pode exibir um Alert confirmando se deseja cancelar a edição
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [modoEdicao]);
 
   const handleNomeChange = (text) => setNome(text.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toUpperCase());
   const handleFuncaoChange = (text) => setFuncao(text.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toUpperCase());
@@ -65,95 +79,112 @@ export default function CadastroScreen({ navigation, route }) {
         await inserirUsuario(nome, email, funcao, cpf, novaMatricula, filialMatriz, turno);
         alert('Usuário cadastrado com sucesso!');
       }
-      navigation.navigate('Consulta'); // Volta para a consulta
+      navigation.navigate('Home'); // Volta para o menu principal
     } catch (error) {
       alert(`Erro ao ${modoEdicao ? 'atualizar' : 'cadastrar'} usuário: ${error.message}`);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Nome:</Text>
-      <TextInput
-        style={styles.input}
-        value={nome}
-        onChangeText={handleNomeChange}
-        placeholder="Digite seu nome"
-      />
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+  <ScrollView contentContainerStyle={[styles.scrollContainer, { paddingBottom: Platform.OS === 'android' ? 110 : 40 }]} keyboardShouldPersistTaps='handled'>
+          <View style={styles.container}>
+            <Text style={styles.label}>Nome:</Text>
+            <TextInput
+              style={styles.input}
+              value={nome}
+              onChangeText={handleNomeChange}
+              placeholder="Digite seu nome"
+            />
 
-      <Text style={styles.label}>Email:</Text>
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Digite seu email"
-        keyboardType="email-address"
-      />
+            <Text style={styles.label}>Email:</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Digite seu email"
+              keyboardType="email-address"
+            />
 
-      <Text style={styles.label}>Função:</Text>
-      <TextInput
-        style={styles.input}
-        value={funcao}
-        onChangeText={handleFuncaoChange}
-        placeholder="Digite sua função"
-      />
+            <Text style={styles.label}>Função:</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={funcao}
+                onValueChange={(itemValue) => setFuncao(itemValue)}
+                mode="dropdown"
+              >
+                <Picker.Item label="RH" value="RH" />
+                <Picker.Item label="Funcionário" value="Funcionario" />
+              </Picker>
+            </View>
 
-      <Text style={styles.label}>CPF:</Text>
-      <TextInput
-        style={styles.input}
-        value={cpf}
-        onChangeText={handleCpfChange}
-        placeholder="Digite seu CPF"
-        keyboardType="numeric"
-      />
+            <Text style={styles.label}>CPF:</Text>
+            <TextInput
+              style={styles.input}
+              value={cpf}
+              onChangeText={handleCpfChange}
+              placeholder="Digite seu CPF"
+              keyboardType="numeric"
+            />      
 
-      {/* --- CAMPO MATRÍCULA MODIFICADO --- */}
-      {/* Só mostra o campo Matrícula se estiver em modo de edição */}
-      {modoEdicao && (
-        <>
-          <Text style={styles.label}>Matrícula:</Text>
-          <TextInput
-            style={[styles.input, styles.inputDisabled]} // Estilo de campo desabilitado
-            value={matricula}
-            editable={false} // Impede a edição
-          />
-        </>
-      )}
+            {/* --- CAMPO MATRÍCULA MODIFICADO --- */}
+            {/* Só mostra o campo Matrícula se estiver em modo de edição */}
+            {modoEdicao && (
+              <>
+                <Text style={styles.label}>Matrícula:</Text>
+                <TextInput
+                  style={[styles.input, styles.inputDisabled]} // Estilo de campo desabilitado
+                  value={matricula}
+                  editable={false} // Impede a edição
+                />
+              </>
+            )}
 
-      <Text style={styles.label}>Filial / Matriz:</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={filialMatriz}
-          onValueChange={(itemValue) => setFilialMatriz(itemValue)}
-          mode="dropdown"
-        >
-          <Picker.Item label="Filial" value="Filial" />
-          <Picker.Item label="Matriz" value="Matriz" />
-        </Picker>
-      </View>
+            <Text style={styles.label}>Filial / Matriz:</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={filialMatriz}
+                onValueChange={(itemValue) => setFilialMatriz(itemValue)}
+                mode="dropdown"
+              >
+                <Picker.Item label="Filial" value="Filial" />
+                <Picker.Item label="Matriz" value="Matriz" />
+              </Picker>
+            </View>
 
-      <Text style={styles.label}>Turno:</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={turno}
-          onValueChange={(itemValue) => setTurno(itemValue)}
-          mode="dropdown"
-        >
-          <Picker.Item label="Manhã" value="Manhã" />
-          <Picker.Item label="Tarde" value="Tarde" />
-        </Picker>
-      </View>
+            <Text style={styles.label}>Turno:</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={turno}
+                onValueChange={(itemValue) => setTurno(itemValue)}
+                mode="dropdown"
+              >
+                <Picker.Item label="Manhã" value="Manhã" />
+                <Picker.Item label="Tarde" value="Tarde" />
+              </Picker>
+            </View>
 
-      <View style={styles.buttonContainer}>
-        <Button title="Voltar" onPress={() => navigation.goBack()} />
-        <Button title={modoEdicao ? "Atualizar" : "Cadastrar"} onPress={enviarDados} />
-      </View>
-    </View>
+            <View style={styles.buttonContainer}>
+              <Button title="Voltar" onPress={() => navigation.goBack()} />
+              <Button title={modoEdicao ? "Atualizar" : "Cadastrar"} onPress={enviarDados} />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, justifyContent: 'center' },
+  safeArea: { flex: 1, backgroundColor: '#fff' },
+  flex: { flex: 1 },
+  scrollContainer: { flexGrow: 1 },
+  container: { padding: 20 },
   label: { fontSize: 18, marginBottom: 5 },
   input: {
     borderWidth: 1,
@@ -178,6 +209,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20
+    marginTop: 20,
+    marginBottom: 20
   }
 });
