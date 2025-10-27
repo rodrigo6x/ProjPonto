@@ -86,24 +86,46 @@ export async function initDB() {
  */
 export async function inserirUsuario(nome, email, funcao, cpf, matricula, filialMatriz, turno) {
   try {
-    console.log('➕ Inserindo usuário no Firebase:', { nome, email, funcao, cpf, matricula, filialMatriz, turno });
-    
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
-      nome,
-      email,
-      funcao,
-      cpf,
-      matricula,
-      filialMatriz,
-      turno,
+    // Validação detalhada dos campos antes de inserir
+    if (!nome) throw new Error('Nome é obrigatório');
+    if (!email) throw new Error('Email é obrigatório');
+    if (!funcao) throw new Error('Função é obrigatória');
+    if (!cpf) throw new Error('CPF é obrigatório');
+    if (!filialMatriz) throw new Error('Filial/Matriz é obrigatório');
+    if (!turno) throw new Error('Turno é obrigatório');
+
+    console.log('➕ Valores recebidos para inserção:', {
+      nome: nome || 'null/undefined',
+      email: email || 'null/undefined',
+      funcao: funcao || 'null/undefined',
+      cpf: cpf || 'null/undefined',
+      matricula: matricula || 'null/undefined',
+      filialMatriz: filialMatriz || 'null/undefined',
+      turno: turno || 'null/undefined'
+    });
+
+    // Garantindo que todos os campos são strings
+    const userData = {
+      nome: String(nome),
+      email: String(email),
+      funcao: String(funcao),
+      cpf: String(cpf),
+      matricula: matricula ? String(matricula) : null,
+      filialMatriz: String(filialMatriz),
+      turno: String(turno),
       createdAt: new Date(),
       updatedAt: new Date()
-    });
+    };
+
+    console.log('➕ Dados formatados para inserção:', userData);
+    
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), userData);
     
     console.log('✅ Usuário inserido com sucesso no Firebase, ID:', docRef.id);
     return { insertId: docRef.id, rowsAffected: 1 };
   } catch (error) {
     console.error('❌ Erro ao inserir usuário no Firebase:', error);
+    console.error('❌ Stack trace:', error.stack);
     throw error;
   }
 }

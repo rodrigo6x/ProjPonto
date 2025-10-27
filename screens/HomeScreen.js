@@ -15,23 +15,38 @@ const HomeScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
+      {/* Header com nome do usuário logado (canto superior direito) */}
+      <View style={styles.header}>
+        {usuario?.nome ? (
+          <Text style={styles.welcomeName}>{`Olá, ${usuario.nome}`}</Text>
+        ) : null}
+      </View>
       <Text style={styles.title}>Bem-vindo!</Text>
       <Text style={styles.subtitle}>Escolha uma opção:</Text>
 
-      {/* Mostrar todos os botões para qualquer usuário */}
-      {usuario.funcao === 'admin' && (
+      {/* Mostrar botão de cadastro apenas para admin */}
+      {usuario?.funcao === 'admin' && (
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro', { usuario })}>
           <Text style={styles.buttonText}>Cadastro</Text>
         </TouchableOpacity>
       )}
       
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta', { usuario })}>
-        <Text style={styles.buttonText}>Consulta</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Ponto', { usuario })}>
-        <Text style={styles.buttonText}>Ponto</Text>
-      </TouchableOpacity>
+      {/* Só mostrar os outros botões se houver um usuário logado */}
+      {usuario ? (
+        <>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta', { usuario })}>
+            <Text style={styles.buttonText}>Consulta</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Ponto', { usuario })}>
+            <Text style={styles.buttonText}>Ponto</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <Text style={[styles.subtitle, { color: '#ff6b6b' }]}>
+          Sessão expirada. Por favor, faça login novamente.
+        </Text>
+      )}
 
       {/* --- Botão Sair --- */}
       <TouchableOpacity 
@@ -81,6 +96,19 @@ const styles = StyleSheet.create({
   logoutButton: {
     backgroundColor: '#D32F2F', // Um tom de vermelho para diferenciar
   },
+  header: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    right: 12,
+    fontSize: 20,
+    paddingTop: 4
+  },
+  welcomeName: {
+    color: '#fff',
+    fontSize: 14,
+    opacity: 0.95
+  }
 });
 
 export default HomeScreen;

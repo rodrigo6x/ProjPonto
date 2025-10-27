@@ -28,8 +28,8 @@ export default function CadastroScreen({ navigation, route }) {
   const [usuarioId, setUsuarioId] = useState(null);
 
   useEffect(() => {
-    if (route?.params?.usuario && route?.params?.modoEdicao) {
-      const usuario = route.params.usuario;
+      if (route?.params?.usuarioParaEditar && route?.params?.modoEdicao) {
+        const usuario = route.params.usuarioParaEditar;
       setNome(usuario.nome);
       setEmail(usuario.email);
       setFuncao(usuario.funcao);
@@ -62,25 +62,87 @@ export default function CadastroScreen({ navigation, route }) {
   // Função handleMatriculaChange removida, pois não é mais digitada
 
   const enviarDados = async () => {
-    // Matrícula foi removida da validação, pois é gerada auto
-    if (!nome || !email || !funcao || !cpf || !filialMatriz || !turno) {
-      alert('Por favor, preencha todos os campos!');
+    // Debug log para verificar os valores antes da validação
+    console.log('Valores antes da validação:', {
+      nome,
+      email,
+      funcao,
+      cpf,
+      filialMatriz,
+      turno
+    });
+
+    // Validação mais robusta com mensagens específicas
+    if (!nome?.trim()) {
+      alert('Por favor, preencha o nome!');
       return;
     }
+    if (!email?.trim()) {
+      alert('Por favor, preencha o email!');
+      return;
+    }
+    if (!funcao?.trim()) {
+      alert('Por favor, selecione uma função!');
+      return;
+    }
+    if (!cpf?.trim()) {
+      alert('Por favor, preencha o CPF!');
+      return;
+    }
+    if (!filialMatriz?.trim()) {
+      alert('Por favor, selecione Filial ou Matriz!');
+      return;
+    }
+    if (!turno?.trim()) {
+      alert('Por favor, selecione um turno!');
+      return;
+    }
+
     try {
+      // Guarda o usuário logado (admin) antes de qualquer operação
+      const usuarioLogado = route?.params?.usuario;
+      
+      // Log do estado antes de tentar salvar
+      console.log('Estado antes de salvar:', {
+        modoEdicao,
+        nome,
+        email,
+        funcao,
+        cpf,
+        matricula,
+        filialMatriz,
+        turno,
+        usuarioId
+      });
+
       if (modoEdicao) {
         // Modo Edição: Usa a matrícula que já está no state (não altera)
+        console.log('Atualizando usuário existente...');
         await atualizarUsuario(usuarioId, nome, email, funcao, cpf, matricula, filialMatriz, turno);
         alert('Usuário atualizado com sucesso!');
       } else {
         // Modo Cadastro: Gera uma nova matrícula ANTES de inserir
-        const novaMatricula = gerarMatricula(); 
+        console.log('Cadastrando novo usuário...');
+        const novaMatricula = gerarMatricula();
+        console.log('Nova matrícula gerada:', novaMatricula);
         
         await inserirUsuario(nome, email, funcao, cpf, novaMatricula, filialMatriz, turno);
         alert('Usuário cadastrado com sucesso!');
       }
-      navigation.navigate('Home'); // Volta para o menu principal
+      
+      // Sempre retorna para Home com o usuário original (admin)
+      if (usuarioLogado) {
+        navigation.navigate('Home', { usuario: usuarioLogado });
+      } else {
+        // Caso não tenha usuário logado (não deveria acontecer), volta para login
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
     } catch (error) {
+      console.error('Erro completo:', error);
+      console.error('Stack trace:', error.stack);
       alert(`Erro ao ${modoEdicao ? 'atualizar' : 'cadastrar'} usuário: ${error.message}`);
     }
   };
@@ -114,9 +176,19 @@ export default function CadastroScreen({ navigation, route }) {
             <Text style={styles.label}>Função:</Text>
             <View style={styles.pickerContainer}>
               <Picker
-                selectedValue={funcao}
-                onValueChange={(itemValue) => setFuncao(itemValue)}
+                selectedValue={funcao || 'RH'}
+                onValueChange={(itemValue) => {
+                  console.log('Função anterior:', funcao);
+                  console.log('Nova função selecionada:', itemValue);
+                  if (itemValue && typeof itemValue === 'string') {
+                    setFuncao(itemValue);
+                  } else {
+                    console.warn('Valor inválido recebido no Picker:', itemValue);
+                    setFuncao('RH'); // Valor padrão caso receba um valor inválido
+                  }
+                }}
                 mode="dropdown"
+                enabled={true}
               >
                 <Picker.Item label="RH" value="RH" />
                 <Picker.Item label="Funcionário" value="Funcionario" />

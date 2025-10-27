@@ -52,8 +52,7 @@ export default function ConsultaScreen({ navigation, route }) {
         });
         return unsubscribe;
     }, [navigation]);
-
-    // Função para deletar um usuário
+    // Função para confirmar exclusão de um usuário
     const confirmarDeletar = (id, nome) => {
         Alert.alert(
             'Confirmar Exclusão',
@@ -65,26 +64,29 @@ export default function ConsultaScreen({ navigation, route }) {
         );
     };
 
-    // Função para deletar um usuário
+    // Função para deletar um usuário (invocada pela confirmação)
     const deletarUsuarioConfirmado = async (id) => {
         try {
             await deletarUsuario(id);
             alert('Usuário deletado com sucesso!');
             // Recarrega a lista baseada no termo de busca atual
-            carregarUsuarios(termoBusca); 
+            carregarUsuarios(termoBusca);
         } catch (error) {
             alert('Erro ao deletar usuário: ' + error.message);
         }
     };
 
-    // Função para editar um usuário
-    const editarUsuario = (usuario) => {
+    // Função para editar um usuário: navegamos para Cadastro passando
+    // dois objetos distintos: o usuário logado (route.params.usuario)
+    // e o usuário que será editado (usuarioParaEditar). Assim não
+    // substituímos a sessão do admin.
+    const editarUsuario = (usuarioParaEditar) => {
         navigation.navigate('Cadastro', {
-            usuario: usuario,
+            usuario: route?.params?.usuario,
+            usuarioParaEditar: usuarioParaEditar,
             modoEdicao: true
         });
     };
-
     // Função para renderizar os usuários (ATUALIZEI AQUI)
     // Mostrando os dados relevantes para a busca
     const renderItem = ({ item }) => {
@@ -134,7 +136,9 @@ export default function ConsultaScreen({ navigation, route }) {
             <View style={{ marginBottom: 10 }}>
                 <Button
                     title="Cadastrar Usuario"
-                    onPress={() => navigation.navigate('Cadastro', { usuario })}
+                        onPress={() => navigation.navigate('Cadastro', { 
+                            usuario: route?.params?.usuario // Mantém o usuário logado
+                        })}
                 />
             </View>
         </View>
