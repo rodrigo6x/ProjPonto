@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CadastroScreen from './screens/CadastroScreen';
 import ConsultaScreen from './screens/ConsultaScreen';
+import ConsultaPontoScreen from './screens/ConsultaPontoScreen';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import PontoScreen from './screens/PontoScreen';
@@ -32,7 +33,7 @@ export default function App() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ title: 'Login' }}
+          options={{ title: 'Login', headerShown: false }}
         />
         <Stack.Screen
           name="Home"
@@ -48,6 +49,11 @@ export default function App() {
           name="Consulta"
           component={ConsultaScreen}
           options={{ title: 'Lista de Usuários' }}
+        />
+        <Stack.Screen
+          name="ConsultaPonto"
+          component={ConsultaPontoScreen}
+          options={{ title: 'Consulta de Pontos' }}
         />
         <Stack.Screen
           name="Ponto"

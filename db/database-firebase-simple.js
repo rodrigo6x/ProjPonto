@@ -1,6 +1,6 @@
 // Versão simplificada do Firebase para web
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, Timestamp, setDoc, getDoc } from 'firebase/firestore';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -244,24 +244,57 @@ export async function deletarUsuario(id) {
 /**
  * REGISTRAR PONTO
  */
-export async function registrarPonto(usuarioId, tipoPonto, localizacao = null) {
+export async function registrarPonto(usuarioId, tipoPonto, localizacao = null, nomeUsuario = null) {
   try {
     console.log('⏰ Registrando ponto no Firebase:', { usuarioId, tipoPonto, localizacao });
     
-    const docRef = await addDoc(collection(db, PONTOS_COLLECTION), {
-      usuarioId,
-      tipoPonto, // 'entrada' ou 'saida'
-      data: new Date(),
-      localizacao: localizacao ? {
-        latitude: localizacao.latitude,
-        longitude: localizacao.longitude,
-        accuracy: localizacao.accuracy
-      } : null,
-      createdAt: new Date()
-    });
+    // Cria ID do documento usando usuarioId e data atual (YYYY-MM-DD)
+    const hoje = new Date();
+    const dataFormatada = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+    const docId = `${usuarioId}_${dataFormatada}`;
     
-    console.log('✅ Ponto registrado com sucesso no Firebase, ID:', docRef.id);
-    return { insertId: docRef.id, rowsAffected: 1 };
+    // Referência para o documento do dia
+    const pontoRef = doc(db, PONTOS_COLLECTION, docId);
+    
+    // Tenta obter o documento existente
+    const docSnap = await getDoc(pontoRef);
+    
+    if (!docSnap.exists()) {
+      // Se não existe, cria novo documento para o dia
+      await setDoc(pontoRef, {
+        usuarioId,
+        nomeUsuario,
+        data: dataFormatada,
+        registros: {
+          [tipoPonto]: {
+            hora: serverTimestamp(),
+            localizacao: localizacao ? {
+              latitude: localizacao.latitude,
+              longitude: localizacao.longitude,
+              accuracy: localizacao.accuracy
+            } : null
+          }
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      // Se já existe, atualiza apenas o registro específico
+      await updateDoc(pontoRef, {
+        [`registros.${tipoPonto}`]: {
+          hora: serverTimestamp(),
+          localizacao: localizacao ? {
+            latitude: localizacao.latitude,
+            longitude: localizacao.longitude,
+            accuracy: localizacao.accuracy
+          } : null
+        },
+        updatedAt: serverTimestamp()
+      });
+    }
+    
+    console.log('✅ Ponto registrado com sucesso no Firebase, ID:', docId);
+    return { insertId: docId, rowsAffected: 1 };
   } catch (error) {
     console.error('❌ Erro ao registrar ponto no Firebase:', error);
     throw error;
@@ -293,10 +326,26 @@ export async function listarRegistrosPonto(usuarioId = null) {
     const registros = [];
     
     querySnapshot.forEach((doc) => {
-      registros.push({
-        id: doc.id,
-        ...doc.data()
-      });
+      const dados = doc.data();
+      if (dados.registros) {
+        // Para cada tipo de registro (CHEGADA, ALMOCO, etc)
+        Object.entries(dados.registros).forEach(([tipo, info]) => {
+          registros.push({
+            id: doc.id,
+            usuarioId: dados.usuarioId,
+            tipoPonto: tipo,
+            data: info.hora,
+            localizacao: info.localizacao
+          });
+        });
+      }
+    });
+    
+    // Ordena por data decrescente
+    registros.sort((a, b) => {
+      const da = a.data?.toDate?.() || new Date(a.data);
+      const db = b.data?.toDate?.() || new Date(b.data);
+      return db - da;
     });
     
     console.log('📋 Registros de ponto encontrados no Firebase:', registros.length);
@@ -314,20 +363,30 @@ export async function buscarRegistrosPontoPorPeriodo(dataInicio, dataFim, usuari
   try {
     console.log('🔍 Buscando registros de ponto por período no Firebase:', { dataInicio, dataFim, usuarioId });
     
+    // Formata as datas para o padrão YYYY-MM-DD usado nos IDs
+    const formatarData = (data) => {
+      const d = new Date(data);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    
+    const inicioFormatado = formatarData(dataInicio);
+    const fimFormatado = formatarData(dataFim);
+
     let q;
     if (usuarioId) {
+      // Busca documentos onde o ID começa com usuarioId_ e está entre as datas
       q = query(
         collection(db, PONTOS_COLLECTION),
         where('usuarioId', '==', usuarioId),
-        where('data', '>=', dataInicio),
-        where('data', '<=', dataFim),
+        where('data', '>=', inicioFormatado),
+        where('data', '<=', fimFormatado),
         orderBy('data', 'desc')
       );
     } else {
       q = query(
         collection(db, PONTOS_COLLECTION),
-        where('data', '>=', dataInicio),
-        where('data', '<=', dataFim),
+        where('data', '>=', inicioFormatado),
+        where('data', '<=', fimFormatado),
         orderBy('data', 'desc')
       );
     }
@@ -336,10 +395,19 @@ export async function buscarRegistrosPontoPorPeriodo(dataInicio, dataFim, usuari
     const registros = [];
     
     querySnapshot.forEach((doc) => {
-      registros.push({
-        id: doc.id,
-        ...doc.data()
-      });
+      const dados = doc.data();
+      if (dados.registros) {
+        // Para cada tipo de registro (CHEGADA, ALMOCO, etc)
+        Object.entries(dados.registros).forEach(([tipo, info]) => {
+          registros.push({
+            id: doc.id,
+            usuarioId: dados.usuarioId,
+            tipoPonto: tipo,
+            data: info.hora,
+            localizacao: info.localizacao
+          });
+        });
+      }
     });
     
     console.log('🔍 Registros de ponto encontrados por período:', registros.length);
@@ -382,6 +450,45 @@ export async function autenticarUsuario(email, cpf) {
     };
   } catch (error) {
     console.error('❌ Erro ao autenticar usuário no Firebase:', error);
+    throw error;
+  }
+}
+
+/**
+ * ATUALIZAR REGISTRO DE PONTO
+ */
+export async function atualizarRegistroPonto(registroId, tipoPonto, novaData, usuarioAtualizacao) {
+  try {
+    console.log('✏️ Atualizando registro de ponto:', { registroId, tipoPonto, novaData, usuarioAtualizacao });
+    
+    // Verifica se o usuário tem permissão (admin ou RH)
+    if (!usuarioAtualizacao || (usuarioAtualizacao.funcao !== 'admin' && usuarioAtualizacao.funcao !== 'rh')) {
+      throw new Error('Sem permissão para atualizar registros de ponto');
+    }
+
+    const pontoRef = doc(db, PONTOS_COLLECTION, registroId);
+    const docSnap = await getDoc(pontoRef);
+    
+    if (!docSnap.exists()) {
+      throw new Error('Registro de ponto não encontrado');
+    }
+    
+    // Atualiza apenas o registro específico
+    await updateDoc(pontoRef, {
+      [`registros.${tipoPonto}.hora`]: Timestamp.fromDate(new Date(novaData)),
+      [`registros.${tipoPonto}.atualizadoPor`]: {
+        usuarioId: usuarioAtualizacao.id,
+        nome: usuarioAtualizacao.nome,
+        funcao: usuarioAtualizacao.funcao,
+        dataAtualizacao: serverTimestamp()
+      },
+      updatedAt: serverTimestamp()
+    });
+    
+    console.log('✅ Registro de ponto atualizado com sucesso');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Erro ao atualizar registro de ponto:', error);
     throw error;
   }
 }

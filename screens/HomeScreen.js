@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 const HomeScreen = ({ navigation, route }) => {
   // Recebe o usuário vindo do login
   const usuario = route?.params?.usuario || null;
-
+  const isAdmin = usuarioAtual?.funcao === 'RH' || usuarioAtual?.funcao === 'admin';
   const handleLogout = () => {
     // Usamos 'reset' para limpar o histórico de navegação e voltar ao Login
     navigation.reset({
@@ -12,6 +12,7 @@ const HomeScreen = ({ navigation, route }) => {
       routes: [{ name: 'Login' }],
     });
   };
+
 
   return (
     <View style={styles.container}>
@@ -25,21 +26,27 @@ const HomeScreen = ({ navigation, route }) => {
       <Text style={styles.subtitle}>Escolha uma opção:</Text>
 
       {/* Mostrar botão de cadastro apenas para admin */}
-      {usuario?.funcao === 'admin' && (
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro', { usuario })}>
-          <Text style={styles.buttonText}>Cadastro</Text>
-        </TouchableOpacity>
+      {usuario?.funcao === 'RH' && (
+        <>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro', { usuario })}>
+            <Text style={styles.buttonText}>Cadastro</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta', { usuario })}>
+            <Text style={styles.buttonText}>Consulta</Text>
+          </TouchableOpacity>
+        </>
       )}
       
       {/* Só mostrar os outros botões se houver um usuário logado */}
       {usuario ? (
-        <>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta', { usuario })}>
-            <Text style={styles.buttonText}>Consulta</Text>
-          </TouchableOpacity>
-          
+        <>                   
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Ponto', { usuario })}>
             <Text style={styles.buttonText}>Ponto</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ConsultaPonto', { usuario })}>
+            <Text style={styles.buttonText}>Consulta Pontos</Text>
           </TouchableOpacity>
         </>
       ) : (
