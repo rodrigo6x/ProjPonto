@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, TextInput, ActivityIndicator, SafeAreaView, Platform } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet, FlatList, Button, TextInput, ActivityIndicator, SafeAreaView, Platform } from 'react-native';
 import { buscarRegistrosPontoPorPeriodo, listarRegistrosPonto } from '../db/database';
+import styles from '../Style/ConsultaPontoScreenStyle.js';
 
 function startOfDay(date) {
   const d = new Date(date);
@@ -130,20 +131,31 @@ export default function ConsultaPontoScreen({ navigation, route }) {
         <Text style={styles.title}>Consulta de Pontos</Text>
 
         <View style={styles.controls}>
-          <Button title="‹" onPress={prevDay} />
+          <TouchableOpacity style={styles.button} onPress={prevDay}>
+            <Text style={styles.buttonText}>‹</Text>
+          </TouchableOpacity>
+
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.dateText}>{dataSelecionada.toLocaleDateString()}</Text>
+            <Text style={styles.dateText}>
+              {dataSelecionada.toLocaleDateString()}
+            </Text>
           </View>
-          <Button title="›" onPress={nextDay} />
-        </View>
+
+          <TouchableOpacity style={styles.button} onPress={nextDay}>
+            <Text style={styles.buttonText}>›</Text>
+          </TouchableOpacity>
+      </View>
 
         <View style={styles.userInfo}>
           <Text style={styles.userName}>Colaborador: {usuario?.nome || 'Não identificado'}</Text>
         </View>
 
         <View style={styles.rowSmall}>
-          <Button title="Hoje" onPress={hoje} />
+          <TouchableOpacity style={[styles.botao, styles.botaoHoje]} onPress={hoje}>
+            <Text style={styles.textoBotao}>Hoje</Text>
+          </TouchableOpacity>
         </View>
+
 
         {loading && <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 20 }} />}
 
@@ -166,34 +178,3 @@ export default function ConsultaPontoScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 12 },
-  userInfo: { 
-    backgroundColor: '#e3f2fd',
-    padding: 12,
-    borderRadius: 6,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2196F3'
-  },
-  userName: {
-    fontSize: 16,
-    color: '#1976d2',
-    fontWeight: '500'
-  },
-  controls: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  dateText: { fontSize: 16, fontWeight: '600' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  rowSmall: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
-  input: { flex: 1, height: 44, borderColor: '#ccc', borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, backgroundColor: 'white' },
-  list: { marginTop: 8 },
-  item: { backgroundColor: 'white', padding: 12, marginBottom: 8, borderRadius: 6, flexDirection: 'row', alignItems: 'center' },
-  tipo: { fontSize: 16, fontWeight: 'bold' },
-  hora: { fontSize: 14, color: '#555' },
-  usuario: { fontSize: 12, color: '#666' },
-  local: { fontSize: 11, color: '#999' },
-  empty: { textAlign: 'center', marginTop: 20, color: '#666' },
-  error: { color: 'red', textAlign: 'center', marginTop: 8 }
-});

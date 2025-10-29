@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 // Usamos SafeAreaView, ScrollView e KeyboardAvoidingView para permitir scroll e evitar teclado
-import { SafeAreaView, KeyboardAvoidingView, ScrollView, View, Text, TextInput, Button, StyleSheet, Platform, BackHandler } from 'react-native';
+import { SafeAreaView, TouchableOpacity, KeyboardAvoidingView, ScrollView, View, Text, TextInput, Button, StyleSheet, Platform, BackHandler } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { inserirUsuario, atualizarUsuario } from '../db/database';
+import styles from '../Style/CadastroScreenStyle.js';
 
 // --- FUNÇÃO PARA GERAR MATRÍCULA ---
 // Gera 4 dígitos aleatórios (0000-9999) e 1 dígito (0-9)
@@ -173,6 +174,15 @@ export default function CadastroScreen({ navigation, route }) {
               keyboardType="email-address"
             />
 
+            <Text style={styles.label}>CPF:</Text>
+            <TextInput
+              style={styles.input}
+              value={cpf}
+              onChangeText={handleCpfChange}
+              placeholder="Digite seu CPF"
+              keyboardType="numeric"
+            />      
+
             <Text style={styles.label}>Função:</Text>
             <View style={styles.pickerContainer}>
               <Picker
@@ -194,16 +204,7 @@ export default function CadastroScreen({ navigation, route }) {
                 <Picker.Item label="Funcionário" value="Funcionario" />
               </Picker>
             </View>
-
-            <Text style={styles.label}>CPF:</Text>
-            <TextInput
-              style={styles.input}
-              value={cpf}
-              onChangeText={handleCpfChange}
-              placeholder="Digite seu CPF"
-              keyboardType="numeric"
-            />      
-
+            
             {/* --- CAMPO MATRÍCULA MODIFICADO --- */}
             {/* Só mostra o campo Matrícula se estiver em modo de edição */}
             {modoEdicao && (
@@ -242,8 +243,15 @@ export default function CadastroScreen({ navigation, route }) {
             </View>
 
             <View style={styles.buttonContainer}>
-              <Button title="Voltar" onPress={() => navigation.goBack()} />
-              <Button title={modoEdicao ? "Atualizar" : "Cadastrar"} onPress={enviarDados} />
+                <TouchableOpacity style={[styles.botao, styles.botaoVoltar]} onPress={() => navigation.goBack()}>
+                  <Text style={styles.textoBotao}>Voltar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.botao, styles.botaoConfirmar]} onPress={enviarDados}>
+                  <Text style={styles.textoBotao}>
+                    {modoEdicao ? 'Atualizar' : 'Cadastrar'}
+                  </Text>
+                </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -251,37 +259,4 @@ export default function CadastroScreen({ navigation, route }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
-  flex: { flex: 1 },
-  scrollContainer: { flexGrow: 1 },
-  container: { padding: 20 },
-  label: { fontSize: 18, marginBottom: 5 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 20,
-    borderRadius: 5
-  },
-    pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginBottom: 20,
-    overflow: Platform.OS === 'android' ? 'hidden' : 'visible'
-  },
-  // --- NOVO ESTILO ---
-  inputDisabled: {
-    backgroundColor: '#f0f0f0', // Um cinza claro para indicar que está desabilitado
-    color: '#888',
-  },
-  // Removi o pickerContainer dos estilos
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    marginBottom: 20
-  }
-});
+ 

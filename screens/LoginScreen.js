@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { autenticarUsuario } from '../db/database';
+import styles from '../Style/LoguinScreenStyle.js';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -91,55 +92,5 @@ const LoginScreen = ({ navigation }) => {
     </View>
   );
 };
-
-
-// --- ESTILOS ---
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#0F1218', // Um fundo escuro pra combinar
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#aaa',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  input: {
-    backgroundColor: '#1E242E',
-    color: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 15,
-  },
-  button: {
-    backgroundColor: '#2196F3', // Azul do seu menu
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  buttonDisabled: {
-    backgroundColor: '#666',
-    opacity: 0.6,
-  },
-});
-
 
 export default LoginScreen;

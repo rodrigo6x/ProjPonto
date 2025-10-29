@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import styles from '../Style/HomeScreenStyle.js';
 
 const HomeScreen = ({ navigation, route }) => {
   // Recebe o usuário vindo do login
   const usuario = route?.params?.usuario || null;
-  const isAdmin = usuarioAtual?.funcao === 'RH' || usuarioAtual?.funcao === 'admin';
+  const isAdmin = usuario?.funcao === 'RH' || usuario?.funcao === 'admin';
   const handleLogout = () => {
     // Usamos 'reset' para limpar o histórico de navegação e voltar ao Login
     navigation.reset({
@@ -66,56 +67,5 @@ const HomeScreen = ({ navigation, route }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0F1218',
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#aaa',
-    marginBottom: 40,
-  },
-  button: {
-    backgroundColor: '#2196F3',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 20,
-    width: 200,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  // --- Estilo novo para o botão de sair ---
-  logoutButton: {
-    backgroundColor: '#D32F2F', // Um tom de vermelho para diferenciar
-  },
-  header: {
-    position: 'absolute',
-    top: 60,
-    left: 20,
-    right: 12,
-    fontSize: 20,
-    paddingTop: 4
-  },
-  welcomeName: {
-    color: '#fff',
-    fontSize: 14,
-    opacity: 0.95
-  }
-});
 
 export default HomeScreen;
