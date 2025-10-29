@@ -29,37 +29,16 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ title: 'Login', headerShown: false }}
-        />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: 'Menu Principal', headerShown: false }}
-        />
-        <Stack.Screen
-          name="Cadastro"
-          component={CadastroScreen}
-          options={{ title: 'Cadastrar Usuário' }}
-        />
-        <Stack.Screen
-          name="Consulta"
-          component={ConsultaScreen}
-          options={{ title: 'Lista de Usuários' }}
-        />
-        <Stack.Screen
-          name="ConsultaPonto"
-          component={ConsultaPontoScreen}
-          options={{ title: 'Consulta de Pontos' }}
-        />
-        <Stack.Screen
-          name="Ponto"
-          component={PontoScreen}
-          options={{ title: 'Ponto Eletronico' }}
-        />
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{ headerShown: false }} // 👈 aplica a todas as telas
+      >
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Cadastro" component={CadastroScreen} />
+        <Stack.Screen name="Consulta" component={ConsultaScreen} />
+        <Stack.Screen name="ConsultaPonto" component={ConsultaPontoScreen} />
+        <Stack.Screen name="Ponto" component={PontoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

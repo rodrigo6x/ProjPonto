@@ -1,52 +1,56 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../Style/HomeScreenStyle.js';
 
 const HomeScreen = ({ navigation, route }) => {
-  // Recebe o usuário vindo do login
-  const usuario = route?.params?.usuario || null;
-  const isAdmin = usuario?.funcao === 'RH' || usuario?.funcao === 'admin';
+  const usuario = route?.params?.usuario;
+  const isRH = usuario?.funcao === 'RH';
+  const isAdmin = usuario?.funcao === 'admin' || isRH;
+
   const handleLogout = () => {
-    // Usamos 'reset' para limpar o histórico de navegação e voltar ao Login
     navigation.reset({
       index: 0,
       routes: [{ name: 'Login' }],
     });
   };
 
+  const handleNavigate = (screen) => {
+    navigation.navigate(screen, { usuario });
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header com nome do usuário logado (canto superior direito) */}
+      {/* Cabeçalho */}
       <View style={styles.header}>
-        {usuario?.nome ? (
-          <Text style={styles.welcomeName}>{`Olá, ${usuario.nome}`}</Text>
-        ) : null}
+        {usuario?.nome && (
+          <Text style={styles.welcomeName}>Olá, {usuario.nome}</Text>
+        )}
       </View>
+
       <Text style={styles.title}>Bem-vindo!</Text>
       <Text style={styles.subtitle}>Escolha uma opção:</Text>
 
-      {/* Mostrar botão de cadastro apenas para admin */}
-      {usuario?.funcao === 'RH' && (
+      {/* Botões exclusivos para RH/Admin */}
+      {isAdmin && (
         <>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cadastro', { usuario })}>
+          <TouchableOpacity style={styles.button} onPress={() => handleNavigate('Cadastro')}>
             <Text style={styles.buttonText}>Cadastro</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Consulta', { usuario })}>
+          <TouchableOpacity style={styles.button} onPress={() => handleNavigate('Consulta')}>
             <Text style={styles.buttonText}>Consulta</Text>
           </TouchableOpacity>
         </>
       )}
-      
-      {/* Só mostrar os outros botões se houver um usuário logado */}
+
+      {/* Botões visíveis a todos os usuários logados */}
       {usuario ? (
-        <>                   
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Ponto', { usuario })}>
+        <>
+          <TouchableOpacity style={styles.button} onPress={() => handleNavigate('Ponto')}>
             <Text style={styles.buttonText}>Ponto</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ConsultaPonto', { usuario })}>
+          <TouchableOpacity style={styles.button} onPress={() => handleNavigate('ConsultaPonto')}>
             <Text style={styles.buttonText}>Consulta Pontos</Text>
           </TouchableOpacity>
         </>
@@ -56,14 +60,13 @@ const HomeScreen = ({ navigation, route }) => {
         </Text>
       )}
 
-      {/* --- Botão Sair --- */}
-      <TouchableOpacity 
+      {/* Botão de Sair */}
+      <TouchableOpacity
         style={[styles.button, styles.logoutButton]}
         onPress={handleLogout}
       >
         <Text style={styles.buttonText}>Sair</Text>
       </TouchableOpacity>
-
     </View>
   );
 };

@@ -1,9 +1,23 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#1c2520ff' },
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 22, fontWeight: 'bold',fontFamily: 'sans-serif-condensed', color: 'white', textAlign: 'center', marginBottom: 12 },
+  safeArea: { 
+    flex: 1, 
+    backgroundColor: '#1c2520ff' 
+  },
+  container: {
+    marginTop: 100, 
+    flex: 1, 
+    padding: 16 
+  },
+  title: { 
+    fontSize: 22, 
+    fontWeight: 'bold',
+    fontFamily: 'sans-serif-condensed', 
+    color: 'white', 
+    textAlign: 'center', 
+    marginBottom: 12 
+  },
   userInfo: { 
     backgroundColor: '#e3f2fd',
     padding: 12,
@@ -109,5 +123,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
      marginTop: 8 
     }
+  
 });
 export default styles;

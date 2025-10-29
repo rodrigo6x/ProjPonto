@@ -1,127 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, FlatList, Button, TextInput, ActivityIndicator, SafeAreaView, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { SafeAreaView, View, Text, TouchableOpacity, ActivityIndicator, FlatList, Platform} from 'react-native';
 import { buscarRegistrosPontoPorPeriodo, listarRegistrosPonto } from '../db/database';
 import styles from '../Style/ConsultaPontoScreenStyle.js';
 
-function startOfDay(date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
+/** 🕐 Helpers de Data */
+const startOfDay = (date) => new Date(date.setHours(0, 0, 0, 0));
+const endOfDay = (date) => new Date(date.setHours(23, 59, 59, 999));
 
-function endOfDay(date) {
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
-  return d;
-}
-
-function formatTimeFromRecord(r) {
+/** 🕒 Formata a hora do registro */
+const formatTime = (record) => {
   try {
-    const dt = r.data?.toDate?.() || new Date(r.data);
+    const dt = record.data?.toDate?.() || new Date(record.data);
     return dt.toLocaleTimeString();
-  } catch (e) {
+  } catch {
     return '-';
   }
-}
+};
 
-function labelForTipo(tipo) {
+/** 🔖 Tradução dos tipos de ponto */
+const tipoLabel = (tipo) => {
   const map = {
     CHEGADA: 'Chegada',
     ALMOCO: 'Almoço',
     TERMINO_ALMOCO: 'Término Almoço',
     SAIDA: 'Saída',
     entrada: 'Entrada',
-    saida: 'Saída'
+    saida: 'Saída',
   };
   return map[tipo] || tipo || 'Desconhecido';
-}
+};
 
 export default function ConsultaPontoScreen({ navigation, route }) {
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  
-  // Pega usuário da navegação
+  const [erro, setErro] = useState(null);
+
   const usuario = route?.params?.usuario;
   const usuarioId = usuario?.id;
 
-  useEffect(() => {
-    carregarRegistrosDoDia();
-  }, [dataSelecionada]);
-
-  const carregarRegistrosDoDia = async (uid = null) => {
+  /** 🔁 Carrega os registros da data selecionada */
+  const carregarRegistros = useCallback(async (uid = null) => {
     setLoading(true);
-    setError(null);
-    try {
-      const inicio = startOfDay(dataSelecionada);
-      const fim = endOfDay(dataSelecionada);
+    setErro(null);
 
-      // Se a função buscarRegistrosPontoPorPeriodo existir, usamos ela
-      let results = [];
+    try {
+      const inicio = startOfDay(new Date(dataSelecionada));
+      const fim = endOfDay(new Date(dataSelecionada));
+
+      let registros = [];
       try {
-        results = await buscarRegistrosPontoPorPeriodo(inicio, fim, uid || (usuarioId || null));
-      } catch (err) {
-        // fallback: listar todos e filtrar localmente
-        const all = await listarRegistrosPonto(uid || null);
-        results = (all || []).filter(r => {
-          try {
-            const d = r.data?.toDate?.() || new Date(r.data);
-            return d >= inicio && d <= fim;
-          } catch (e) {
-            return false;
-          }
+        registros = await buscarRegistrosPontoPorPeriodo(inicio, fim, uid || usuarioId);
+      } catch {
+        // fallback local
+        const todos = await listarRegistrosPonto(uid || usuarioId);
+        registros = (todos || []).filter((r) => {
+          const d = r.data?.toDate?.() || new Date(r.data);
+          return d >= inicio && d <= fim;
         });
       }
 
-      // Ordena por data asc
-      results.sort((a, b) => {
+      // Ordena por data crescente
+      registros.sort((a, b) => {
         const da = a.data?.toDate?.() || new Date(a.data);
         const db = b.data?.toDate?.() || new Date(b.data);
         return da - db;
       });
 
-      setRegistros(results || []);
+      setRegistros(registros);
     } catch (err) {
-      console.error('Erro ao carregar registros de ponto:', err);
-      setError(err.message || String(err));
+      console.error('❌ Erro ao carregar registros:', err);
+      setErro(err.message || 'Erro ao carregar registros.');
     } finally {
       setLoading(false);
     }
+  }, [dataSelecionada, usuarioId]);
+
+  /** 🔄 Recarrega registros sempre que a data muda */
+  useEffect(() => {
+    carregarRegistros();
+  }, [dataSelecionada, carregarRegistros]);
+
+  /** 🗓️ Controle de datas */
+  const alterarDia = (dias) => {
+    const novaData = new Date(dataSelecionada);
+    novaData.setDate(novaData.getDate() + dias);
+    setDataSelecionada(novaData);
   };
 
-  const prevDay = () => {
-    const d = new Date(dataSelecionada);
-    d.setDate(d.getDate() - 1);
-    setDataSelecionada(d);
-  };
+  const voltarHoje = () => setDataSelecionada(new Date());
 
-  const nextDay = () => {
-    const d = new Date(dataSelecionada);
-    d.setDate(d.getDate() + 1);
-    setDataSelecionada(d);
-  };
-
-  const hoje = () => setDataSelecionada(new Date());
-
-  const onBuscarPress = () => carregarRegistrosDoDia(usuarioId || null);
-
+  /** 🔹 Item da lista */
   const renderItem = ({ item }) => {
-    const hora = formatTimeFromRecord(item);
-    const tipoLabel = labelForTipo(item.tipoPonto || item.tipo || item.tipo_ponto);
-    
+    const hora = formatTime(item);
+    const tipo = tipoLabel(item.tipoPonto || item.tipo || item.tipo_ponto);
+
     return (
       <View style={styles.item}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.tipo}>{tipoLabel}</Text>
+          <Text style={styles.tipo}>{tipo}</Text>
           <Text style={styles.hora}>{hora}</Text>
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          {item.localizacao && (
-            <Text style={styles.local}>Lat: {item.localizacao.latitude?.toFixed?.(5)}, Lon: {item.localizacao.longitude?.toFixed?.(5)}</Text>
-          )}
-        </View>
+
+        {item.localizacao && (
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={styles.local}>
+              Lat: {item.localizacao.latitude?.toFixed?.(5)} | Lon: {item.localizacao.longitude?.toFixed?.(5)}
+            </Text>
+          </View>
+        )}
       </View>
+    );
+  };
+
+  /** 🔹 Conteúdo condicional */
+  const Conteudo = () => {
+    if (loading) return <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 20 }} />;
+    if (erro) return <Text style={styles.error}>Erro: {erro}</Text>;
+    if (registros.length === 0)
+      return <Text style={styles.empty}>Nenhum registro encontrado para a data selecionada.</Text>;
+
+    return (
+      <FlatList
+        data={registros}
+        renderItem={renderItem}
+        keyExtractor={(item, idx) => {
+          const t = item.data?.toDate?.()?.getTime?.() || new Date(item.data).getTime();
+          return `${item.tipoPonto}_${t}_${idx}`;
+        }}
+        style={styles.list}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 60 : 30 }}
+      />
     );
   };
 
@@ -130,51 +140,37 @@ export default function ConsultaPontoScreen({ navigation, route }) {
       <View style={styles.container}>
         <Text style={styles.title}>Consulta de Pontos</Text>
 
+        {/* Controles de data */}
         <View style={styles.controls}>
-          <TouchableOpacity style={styles.button} onPress={prevDay}>
+          <TouchableOpacity style={styles.button} onPress={() => alterarDia(-1)}>
             <Text style={styles.buttonText}>‹</Text>
           </TouchableOpacity>
 
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.dateText}>
-              {dataSelecionada.toLocaleDateString()}
-            </Text>
-          </View>
+          <Text style={[styles.dateText, { flex: 1, textAlign: 'center' }]}>
+            {dataSelecionada.toLocaleDateString()}
+          </Text>
 
-          <TouchableOpacity style={styles.button} onPress={nextDay}>
+          <TouchableOpacity style={styles.button} onPress={() => alterarDia(1)}>
             <Text style={styles.buttonText}>›</Text>
           </TouchableOpacity>
-      </View>
-
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>Colaborador: {usuario?.nome || 'Não identificado'}</Text>
         </View>
 
+        {/* Info usuário */}
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>
+            Colaborador: {usuario?.nome || 'Não identificado'}
+          </Text>
+        </View>
+
+        {/* Botão Hoje */}
         <View style={styles.rowSmall}>
-          <TouchableOpacity style={[styles.botao, styles.botaoHoje]} onPress={hoje}>
+          <TouchableOpacity style={[styles.botao, styles.botaoHoje]} onPress={voltarHoje}>
             <Text style={styles.textoBotao}>Hoje</Text>
           </TouchableOpacity>
         </View>
 
-
-        {loading && <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 20 }} />}
-
-        {error && <Text style={styles.error}>Erro: {error}</Text>}
-
-        {!loading && registros.length === 0 && <Text style={styles.empty}>Nenhum registro encontrado para a data selecionada.</Text>}
-
-        <FlatList
-          data={registros}
-          keyExtractor={(item, idx) => {
-            // Cria uma chave única usando todas as informações disponíveis
-            const timestamp = item.data?.toDate?.() ? item.data.toDate().getTime() : (new Date(item.data)).getTime();
-            return `${item.tipoPonto}_${timestamp}_${idx}`;
-          }}
-          renderItem={renderItem}
-          style={styles.list}
-        />
+        <Conteudo />
       </View>
     </SafeAreaView>
   );
 }
-

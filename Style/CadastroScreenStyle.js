@@ -1,8 +1,15 @@
 import { StyleSheet, Platform } from 'react-native';
 
 const styles = StyleSheet.create({
-  container: { padding: 20, justifyContent: 'center' },
-  label: { fontSize: 18, marginBottom: 5 },
+  container: {
+    marginTop: 55, 
+    padding: 20, 
+    justifyContent: 'center' 
+  },
+  label: { 
+    fontSize: 18, 
+    marginBottom: 5 
+  },
   input: {
     fontFamily: 'sans-serif-condensed',
     backgroundColor: '#c0bdbdff',
