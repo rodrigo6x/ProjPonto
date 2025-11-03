@@ -7,6 +7,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#1c2520ff', // Um fundo escuro pra combinar
   },
+  icon: {
+    fontSize: 90, // Tamanho do ícone
+    color: '#466d5aff', // Um tom de verde mais suave
+    alignSelf: 'center',
+    marginBottom: 25,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
