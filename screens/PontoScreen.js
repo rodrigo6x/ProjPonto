@@ -98,32 +98,53 @@ export default function PontoScreen({ navigation, route }) {
 
     try {
       setIsRegistering(true);
+
+      // Solicita permissão de localização
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') throw new Error('Permissão de localização negada.');
 
       const { coords } = await Location.getCurrentPositionAsync({});
       setLocalizacao(coords);
+
+      // Carrega registros atualizados
       await carregarUltimoRegistro();
 
       const ordem = ['CHEGADA', 'ALMOCO', 'TERMINO_ALMOCO', 'SAIDA'];
       let proximoTipo = 'CHEGADA';
+
       if (ultimoRegistro?.tipoPonto) {
         const idx = ordem.indexOf(ultimoRegistro.tipoPonto);
-        if (idx >= 0 && idx < ordem.length - 1) proximoTipo = ordem[idx + 1];
-        else if (idx === ordem.length - 1) return Alert.alert('Atenção', 'Jornada já finalizada hoje.');
+        if (idx >= 0 && idx < ordem.length - 1) {
+          proximoTipo = ordem[idx + 1];
+        } else if (idx === ordem.length - 1) {
+          Alert.alert('Atenção', 'Jornada já finalizada hoje.');
+          setIsRegistering(false);
+          return;
+        }
       }
 
       const existe = registrosHoje.some(r => r.tipoPonto === proximoTipo);
-      if (existe) return Alert.alert('Atenção', `Já existe registro de ${proximoTipo} hoje.`);
-
-      const { status: cameraStatus } = await requestPermission();
-      if (cameraStatus !== 'granted') {
-        Alert.alert('Permissão negada', 'Você precisa permitir o uso da câmera.');
+      if (existe) {
+        Alert.alert('Atenção', `Já existe registro de ${proximoTipo} hoje.`);
+        setIsRegistering(false);
         return;
       }
 
+      // Solicita permissão da câmera
+      const { status: cameraStatus } = await requestPermission();
+      if (cameraStatus !== 'granted') {
+        Alert.alert('Permissão negada', 'Você precisa permitir o uso da câmera.');
+        setIsRegistering(false);
+        return;
+      }
+
+      // Abre câmera para tirar foto
       setCameraVisible(true);
       setIsRegistering(false);
+
+      // Guarda o tipo de ponto que será registrado após a foto
+      setSelectedRegistro({ tipoPonto: proximoTipo });
+
     } catch (error) {
       console.error('Erro ao registrar ponto:', error);
       Alert.alert('Erro', 'Falha ao registrar ponto.');
@@ -144,15 +165,27 @@ export default function PontoScreen({ navigation, route }) {
   };
 
   const salvarFoto = async () => {
+    if (!selectedRegistro) return;
+
     try {
-      await registrarPonto(usuarioId, 'CONFIRMACAO_FOTO', localizacao, selectedUsuario?.nome || usuarioAtual?.nome);
-      Alert.alert('Sucesso', 'Ponto registrado com foto!');
+      await registrarPonto(
+        usuarioId,
+        selectedRegistro.tipoPonto,
+        localizacao,
+        selectedUsuario?.nome || usuarioAtual?.nome
+      );
+
+      Alert.alert('Sucesso', `Ponto ${selectedRegistro.tipoPonto} registrado com foto!`);
       setCameraVisible(false);
       setPhotoPreview(null);
-      carregarUltimoRegistro();
+      setSelectedRegistro(null);
+
+      // Atualiza lista de registros e último registro
+      await carregarUltimoRegistro();
+
     } catch (error) {
       console.error('Erro ao salvar foto:', error);
-      Alert.alert('Erro', 'Falha ao salvar foto.');
+      Alert.alert('Erro', 'Falha ao salvar ponto.');
     }
   };
 
