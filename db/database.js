@@ -1,388 +1,301 @@
+// =============================================================
+//  DATABASE.JS — FIREBASE + SQLITE + MATRÍCULA ALEATÓRIA
+// =============================================================
 
 import { Platform } from 'react-native';
+import { initializeApp } from "firebase/app";
+import { 
+    getFirestore, doc, setDoc, getDoc, getDocs, collection, 
+    updateDoc, deleteDoc, query, where
+} from "firebase/firestore";
 
-// Import Firebase database (versão simplificada)
-import * as firebaseDatabase from './database-firebase-simple';
+const firebaseConfig = {
+    apiKey: "AIzaSyCYhJOD0l9FcfwCSW5WWMYCA0xfLEkNy14",
+    authDomain: "projeto-ponto-eletronico-20be7.firebaseapp.com",
+    projectId: "projeto-ponto-eletronico-20be7",
+    storageBucket: "projeto-ponto-eletronico-20be7.firebasestorage.app",
+    messagingSenderId: "980946615049",
+    appId: "1:980946615049:web:4c4977f5adbebc4df231d8"
+};
 
-// Fallback para SQLite (caso Firebase não funcione)
-let SQLite;
+const app = initializeApp(firebaseConfig);
+export const dbFirebase = getFirestore(app);
+
+// -------------------------------------------------------------
+//  🟦 SQLITE
+// -------------------------------------------------------------
+let SQLite = null;
+let dbLocal = null;
+
 try {
-    SQLite = require('expo-sqlite');
-} catch (error) {
-    console.warn('expo-sqlite not available:', error.message);
-    SQLite = null;
+    SQLite = require("expo-sqlite/legacy");
+} catch {
+    console.log("SQLite não disponível — rodando apenas Firebase.");
 }
 
-// Fallback para web version
-let webDatabase;
-if (Platform.OS === 'web') {
-    try {
-        webDatabase = require('./database-web-test');
-    } catch (error) {
-        console.warn('Web database not available:', error.message);
-    }
-}
-
-function getDB() {
-    if (!db) {
-        if (Platform.OS === 'web' || !SQLite || !SQLite.openDatabase) {
-            // For web platform or when SQLite is not available
-            console.warn('SQLite is not available on this platform. Using mock database.');
-            return null;
-        } else {
-            try {
-                db = SQLite.openDatabase('projetoponto4.db');
-            } catch (error) {
-                console.error('Error opening database:', error);
-                return null;
-            }
-        }
-    }
-    return db;
+function getLocalDB() {
+    if (!SQLite) return null;
+    if (!dbLocal) dbLocal = SQLite.openDatabase("projetoponto4.db");
+    return dbLocal;
 }
 
 function executeSqlAsync(sql, params = []) {
     return new Promise((resolve, reject) => {
-        console.log('🔧 Executando SQL:', sql, 'com parâmetros:', params);
-        const database = getDB();
-        
-        if (!database) {
-            // Mock response for web platform
-            console.warn('⚠️ Database not available on web platform. Operation skipped:', sql);
-            resolve({ 
-                rows: { 
-                    _array: [] 
-                }, 
-                insertId: 1, 
-                rowsAffected: 0 
-            });
-            return;
-        }
-        
-        database.transaction(
-            tx => {
-                tx.executeSql(
-                    sql,
-                    params,
-                    (_, result) => {
-                        console.log('✅ SQL executado com sucesso:', result);
-                        resolve(result);
-                    },
-                    (_, error) => {
-                        // erro na execução do SQL
-                        console.error('❌ Erro na execução do SQL:', error);
-                        reject(error);
-                        return false;
-                    }
-                );
-            },
-            transactionError => {
-                console.error('❌ Erro na transação:', transactionError);
-                reject(transactionError);
-            }
-        );
+        const database = getLocalDB();
+        if (!database) return resolve({ rows: { _array: [] } });
+
+        database.transaction(tx => {
+            tx.executeSql(
+                sql, params,
+                (_, result) => resolve(result),
+                (_, error) => reject(error)
+            );
+        });
     });
 }
 
-/**
- * INICIALIZAR BANCO DE DADOS
- */
+// -------------------------------------------------------------
+//  🔢 GERAR MATRÍCULA ALEATÓRIA
+// -------------------------------------------------------------
+export async function gerarMatricula() {
+    function gerar() {
+        const parte1 = String(Math.floor(Math.random() * 100000)).padStart(5, "0");
+        const parte2 = String(Math.floor(Math.random() * 100)).padStart(2, "0");
+        return `${parte1}-${parte2}`;
+    }
+
+    let matricula = gerar();
+    let ref = doc(dbFirebase, "usuarios", matricula);
+    let snap = await getDoc(ref);
+
+    while (snap.exists()) {
+        matricula = gerar();
+        ref = doc(dbFirebase, "usuarios", matricula);
+        snap = await getDoc(ref);
+    }
+
+    return matricula;
+}
+
+// -------------------------------------------------------------
+//  🏁 INIT DB
+// -------------------------------------------------------------
 export async function initDB() {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            console.log('🔥 Tentando usar Firebase...');
-            return await firebaseDatabase.initDB();
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível, usando fallback:', firebaseError.message);
-            
-            // Fallback para web
-            if (Platform.OS === 'web' && webDatabase) {
-                console.log('🌐 Usando banco de dados web como fallback');
-                return await webDatabase.initDB();
-            }
-            
-            // Fallback para SQLite
-            console.log('🗄️ Usando SQLite como fallback');
-            getDB();
-            await executeSqlAsync(`
-                CREATE TABLE IF NOT EXISTS usuarios (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nome TEXT NOT NULL,
-                    email TEXT NOT NULL,
-                    funcao TEXT NOT NULL,
-                    cpf TEXT NOT NULL,
-                    matricula TEXT NULL,
-                    filialMatriz TEXT NULL,
-                    turno TEXT NULL
-                );
-            `);
+    if (!SQLite) return;
 
-            const adminEmail = 'administrador';
-            const adminCpf = 'admin';
-            const adminFuncao = 'admin';
-            const adminNome = 'Administrador';
+    await executeSqlAsync(`
+        CREATE TABLE IF NOT EXISTS usuarios (
+            matricula TEXT PRIMARY KEY,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL,
+            funcao TEXT NOT NULL,
+            cpf TEXT NOT NULL,
+            filialMatriz TEXT,
+            turno TEXT
+        );
+    `);
 
-            const selectRes = await executeSqlAsync('SELECT * FROM usuarios WHERE email = ?;', [adminEmail]);
-            const rows = (selectRes && selectRes.rows && selectRes.rows._array) ? selectRes.rows._array : [];
-            if (rows.length === 0) {
-                await executeSqlAsync(
-                    'INSERT INTO usuarios (nome, email, funcao, cpf, matricula, filialMatriz, turno) VALUES (?, ?, ?, ?, ?, ?, ?);',
-                    [adminNome, adminEmail, adminFuncao, adminCpf, null, null, null]
-                );
-            }
-        }
-    } catch (error) {
-        console.error('❌ Erro ao inicializar banco:', error);
-        throw error;
-    }
+    await executeSqlAsync(`
+        CREATE TABLE IF NOT EXISTS pontos (
+            id TEXT PRIMARY KEY,
+            matricula TEXT,
+            tipo TEXT,
+            data TEXT,
+            hora TEXT,
+            timestamp INTEGER
+        );
+    `);
 }
 
-/**
- * INSERIR USUÁRIO
- */
-export async function inserirUsuario(nome, email, funcao, cpf, matricula, filialMatriz, turno) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.inserirUsuario(nome, email, funcao, cpf, matricula, filialMatriz, turno);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível, usando fallback:', firebaseError.message);
-            
-            // Fallback para web
-            if (Platform.OS === 'web' && webDatabase) {
-                return await webDatabase.inserirUsuario(nome, email, funcao, cpf, matricula, filialMatriz, turno);
-            }
-            
-            // Fallback para SQLite
-            console.log('➕ Inserindo usuário no SQLite:', { nome, email, funcao, cpf, matricula, filialMatriz, turno });
-            await initDB();
+// -------------------------------------------------------------
+//  ➕ INSERIR USUÁRIO
+// -------------------------------------------------------------
+export async function inserirUsuario(nome, email, funcao, cpf, filialMatriz, turno) {
+    const matricula = await gerarMatricula();
 
-            const res = await executeSqlAsync(
-                'INSERT INTO usuarios (nome, email, funcao, cpf, matricula, filialMatriz, turno) VALUES (?, ?, ?, ?, ?, ?, ?);',
-                [nome, email, funcao, cpf, matricula, filialMatriz, turno]
-            );
-            console.log('✅ Usuário inserido com sucesso no SQLite:', res);
-            return res;
-        }
-    } catch (error) {
-        console.error('❌ Erro ao inserir usuario:', error);
-        throw error;
+    const dados = { matricula, nome, email, funcao, cpf, filialMatriz, turno };
+    await setDoc(doc(dbFirebase, "usuarios", matricula), dados);
+
+    if (SQLite) {
+        await executeSqlAsync(
+            `INSERT INTO usuarios (matricula, nome, email, funcao, cpf, filialMatriz, turno)
+             VALUES (?, ?, ?, ?, ?, ?, ?);`,
+            [matricula, nome, email, funcao, cpf, filialMatriz, turno]
+        );
     }
+
+    return matricula;
 }
 
-/**
- * LISTAR USUÁRIOS
- */
+// -------------------------------------------------------------
+//  📋 LISTAR USUÁRIOS
+// -------------------------------------------------------------
 export async function listarUsuarios() {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.listarUsuarios();
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível, usando fallback:', firebaseError.message);
-            
-            // Fallback para web
-            if (Platform.OS === 'web' && webDatabase) {
-                return await webDatabase.listarUsuarios();
-            }
-            
-            // Fallback para SQLite
-            console.log('🗄️ Listando usuários do SQLite...');
-            await initDB();
-            const res = await executeSqlAsync('SELECT * FROM usuarios;');
-            const usuarios = (res && res.rows && res.rows._array) ? res.rows._array : [];
-            console.log('🗄️ Usuários retornados do SQLite:', usuarios);
-            return usuarios;
-        }
-    } catch (error) {
-        console.error('❌ Erro ao listar usuarios:', error);
-        throw error;
+    const snap = await getDocs(collection(dbFirebase, "usuarios"));
+    return snap.docs.map(d => d.data());
+}
+
+// -------------------------------------------------------------
+//  ✏️ ATUALIZAR USUÁRIO
+// -------------------------------------------------------------
+export async function atualizarUsuario(matricula, nome, email, funcao, cpf, filialMatriz, turno) {
+    await updateDoc(doc(dbFirebase, "usuarios", matricula), { nome, email, funcao, cpf, filialMatriz, turno });
+
+    if (SQLite) {
+        await executeSqlAsync(
+            `UPDATE usuarios SET nome=?, email=?, funcao=?, cpf=?, filialMatriz=?, turno=? WHERE matricula=?`,
+            [nome, email, funcao, cpf, filialMatriz, turno, matricula]
+        );
     }
 }
 
-export async function atualizarUsuario(id, nome, email, funcao, cpf, matricula, filialMatriz, turno) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.atualizarUsuario(id, nome, email, funcao, cpf, matricula, filialMatriz, turno);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível, usando fallback:', firebaseError.message);
-            
-            // Fallback para web
-            if (Platform.OS === 'web' && webDatabase) {
-                return await webDatabase.atualizarUsuario(id, nome, email, funcao, cpf, matricula, filialMatriz, turno);
-            }
-            
-            // Fallback para SQLite
-            await initDB();
-            const res = await executeSqlAsync(
-                'UPDATE usuarios SET nome = ?, email = ?, funcao = ?, cpf = ?, matricula = ?, filialMatriz = ?, turno = ? WHERE id = ?;',
-                [nome, email, funcao, cpf, matricula, filialMatriz, turno, id]
-            );
-            return res;
-        }
-    } catch (error) {
-        console.error('Erro ao atualizar usuario:', error);
-        throw error;
-    }
-}
-
-/**
- * BUSCAR USUÁRIOS
- */
+// -------------------------------------------------------------
+//  🔍 BUSCAR USUÁRIOS
+// -------------------------------------------------------------
 export async function buscarUsuarios(termo) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.buscarUsuarios(termo);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível, usando fallback:', firebaseError.message);
-            
-            // Fallback para web
-            if (Platform.OS === 'web' && webDatabase) {
-                return await webDatabase.buscarUsuarios(termo);
-            }
-            
-            // Fallback para SQLite
-            await initDB();
-            const termoBusca = `${termo}%`;
-            const res = await executeSqlAsync(
-                'SELECT * FROM usuarios WHERE nome LIKE ? OR matricula LIKE ? OR cpf LIKE ?;',
-                [termoBusca, termoBusca, termoBusca]
-            );
-            return (res && res.rows && res.rows._array) ? res.rows._array : [];
-        }
-    } catch (error) {
-        console.error('Erro ao buscar usuarios:', error);
-        throw error;
+    const q = query(
+        collection(dbFirebase, "usuarios"),
+        where("nome", ">=", termo),
+        where("nome", "<=", termo + "\uf8ff")
+    );
+
+    const snap = await getDocs(q);
+    return snap.docs.map(d => d.data());
+}
+
+// -------------------------------------------------------------
+//  🗑️ DELETAR USUÁRIO
+// -------------------------------------------------------------
+export async function deletarUsuario(matricula) {
+    await deleteDoc(doc(dbFirebase, "usuarios", matricula));
+
+    if (SQLite) {
+        await executeSqlAsync(`DELETE FROM usuarios WHERE matricula=?`, [matricula]);
     }
 }
 
-/**
- * DELETAR USUÁRIO
- */
-export async function deletarUsuario(id) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.deletarUsuario(id);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível, usando fallback:', firebaseError.message);
-            
-            // Fallback para web
-            if (Platform.OS === 'web' && webDatabase) {
-                return await webDatabase.deletarUsuario(id);
-            }
-            
-            // Fallback para SQLite
-            await initDB();
-            const res = await executeSqlAsync('DELETE FROM usuarios WHERE id = ?;', [id]);
-            return res;
-        }
-    } catch (error) {
-        console.error('Erro ao deletar usuario:', error);
-        throw error;
-    }
-}
-
-/**
- * REGISTRAR PONTO
- */
-export async function registrarPonto(usuarioId, tipoPonto, localizacao = null) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.registrarPonto(usuarioId, tipoPonto, localizacao);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível para ponto, usando fallback:', firebaseError.message);
-            // Para ponto, vamos apenas simular o sucesso se Firebase falhar
-            console.log('⏰ Ponto registrado localmente (Firebase não disponível)');
-            return { insertId: 'local-' + Date.now(), rowsAffected: 1 };
-        }
-    } catch (error) {
-        console.error('❌ Erro ao registrar ponto:', error);
-        throw error;
-    }
-}
-
-/**
- * LISTAR REGISTROS DE PONTO
- */
-export async function listarRegistrosPonto(usuarioId = null) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.listarRegistrosPonto(usuarioId);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível para listar pontos, usando fallback:', firebaseError.message);
-            // Retorna array vazio se Firebase não estiver disponível
-            return [];
-        }
-    } catch (error) {
-        console.error('❌ Erro ao listar registros de ponto:', error);
-        throw error;
-    }
-}
-
-/**
- * BUSCAR REGISTROS DE PONTO POR PERÍODO
- */
-export async function buscarRegistrosPontoPorPeriodo(dataInicio, dataFim, usuarioId = null) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.buscarRegistrosPontoPorPeriodo(dataInicio, dataFim, usuarioId);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível para buscar pontos por período, usando fallback:', firebaseError.message);
-            // Retorna array vazio se Firebase não estiver disponível
-            return [];
-        }
-    } catch (error) {
-        console.error('❌ Erro ao buscar registros de ponto por período:', error);
-        throw error;
-    }
-}
-
-/**
- * AUTENTICAR USUÁRIO (LOGIN)
- */
+// -------------------------------------------------------------
+//  🔐 LOGIN
+// -------------------------------------------------------------
 export async function autenticarUsuario(email, cpf) {
-    try {
-        // Tenta usar Firebase primeiro
-        try {
-            return await firebaseDatabase.autenticarUsuario(email, cpf);
-        } catch (firebaseError) {
-            console.warn('⚠️ Firebase não disponível para autenticação, usando fallback:', firebaseError.message);
-            
-            // Fallback para web
-            if (Platform.OS === 'web' && webDatabase) {
-                return await webDatabase.autenticarUsuario(email, cpf);
-            }
-            
-            // Fallback para SQLite
-            await initDB();
-            const res = await executeSqlAsync(
-                'SELECT * FROM usuarios WHERE email = ? AND cpf = ?;',
-                [email, cpf]
-            );
-            
-            const usuarios = (res && res.rows && res.rows._array) ? res.rows._array : [];
-            
-            if (usuarios.length > 0) {
-                return {
-                    success: true,
-                    usuario: usuarios[0]
-                };
-            } else {
-                return {
-                    success: false,
-                    message: 'Email ou CPF incorretos'
-                };
+    const q = query(
+        collection(dbFirebase, "usuarios"),
+        where("email", "==", email),
+        where("cpf", "==", cpf)
+    );
+
+    const snap = await getDocs(q);
+    if (snap.empty) return { success: false, message: "Email ou CPF incorretos" };
+
+    return { success: true, usuario: snap.docs[0].data() };
+}
+
+// -------------------------------------------------------------
+//  🕒 REGISTRAR PONTO
+// -------------------------------------------------------------
+export async function registrarPonto(matricula, tipo) {
+    if (!matricula) throw new Error("Matrícula inválida ao registrar ponto.");
+
+    const agora = new Date();
+    const id = `${matricula}_${agora.getTime()}`;
+    const dados = {
+        id,
+        matricula,
+        tipo,
+        data: agora.toLocaleDateString("pt-BR"),
+        hora: agora.toLocaleTimeString("pt-BR"),
+        timestamp: agora.getTime()
+    };
+
+    await setDoc(doc(dbFirebase, "pontos", id), dados);
+
+    if (SQLite) {
+        await executeSqlAsync(
+            `INSERT INTO pontos (id, matricula, tipo, data, hora, timestamp)
+             VALUES (?, ?, ?, ?, ?, ?);`,
+            [id, matricula, tipo, dados.data, dados.hora, dados.timestamp]
+        );
+    }
+
+    return id;
+}
+
+// -------------------------------------------------------------
+//  📄 LISTAR PONTOS POR MATRÍCULA
+// -------------------------------------------------------------
+export async function listarPontos(matricula) {
+    if (!matricula) return [];
+
+    const q = query(collection(dbFirebase, "pontos"), where("matricula", "==", matricula));
+    const snap = await getDocs(q);
+    const dados = snap.docs.map(d => d.data());
+
+    // Retorna ordenado
+    return dados.sort((a, b) => a.timestamp - b.timestamp);
+}
+
+// -------------------------------------------------------------
+//  📅 LISTAR PONTOS POR DATA
+// -------------------------------------------------------------
+export async function listarPontosPorData(matricula, inicioTimestamp, fimTimestamp) {
+    if (!matricula) return [];
+
+    const q = query(
+        collection(dbFirebase, "pontos"),
+        where("matricula", "==", matricula),
+        where("timestamp", ">=", inicioTimestamp),
+        where("timestamp", "<=", fimTimestamp)
+    );
+
+    const snap = await getDocs(q);
+    const dados = snap.docs.map(d => d.data());
+
+    // Retorna ordenado
+    return dados.sort((a, b) => a.timestamp - b.timestamp);
+}
+
+// ✏️ ATUALIZAR PONTO (Corrigido para o SQLite)
+export async function atualizarPonto(id, dados) {
+    const ref = doc(dbFirebase, "pontos", id);
+    await updateDoc(ref, dados); // Atualiza Firestore
+
+    if (SQLite) {
+        const campos = [];
+        const valores = [];
+        
+        for (const key in dados) {
+            if (dados.hasOwnProperty(key)) {
+                campos.push(`${key}=?`);
+                valores.push(dados[key]);
             }
         }
-    } catch (error) {
-        console.error('❌ Erro ao autenticar usuário:', error);
-        throw error;
+        
+        // Adiciona o ID ao final da lista de valores para a cláusula WHERE
+        valores.push(id); 
+
+        if (campos.length > 0) {
+            const sql = `UPDATE pontos SET ${campos.join(", ")} WHERE id=?`;
+            await executeSqlAsync(sql, valores);
+        }
     }
+}
+
+
+// -------------------------------------------------------------
+//  🗑️ DELETAR PONTO
+// -------------------------------------------------------------
+export async function deletarPonto(id) {
+    const ref = doc(dbFirebase, "pontos", id);
+    await deleteDoc(ref);
+
+    if (SQLite) {
+        await executeSqlAsync(`DELETE FROM pontos WHERE id=?`, [id]);
+    }
+}
+
+// -------------------------------------------------------------
+//  📌 LISTAR REGISTROS COMPLETO
+// -------------------------------------------------------------
+export async function listarRegistrosPonto(matricula) {
+    return await listarPontos(matricula);
 }

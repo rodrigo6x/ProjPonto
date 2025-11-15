@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, TouchableOpacity, KeyboardAvoidingView, ScrollView, View, Text, TextInput, Platform, BackHandler, Alert,} from 'react-native';
+import { 
+  SafeAreaView, 
+  TouchableOpacity, 
+  KeyboardAvoidingView, 
+  ScrollView, 
+  View, 
+  Text, 
+  TextInput, 
+  Platform, 
+  BackHandler, 
+  Alert 
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+
 import { inserirUsuario, atualizarUsuario } from '../db/database';
 import styles from '../Style/CadastroScreenStyle';
-
-// --- Função utilitária: Gera matrícula ---
-const gerarMatricula = () => {
-  const parte1 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-  const parte2 = String(Math.floor(Math.random() * 10));
-  return `${parte1}-${parte2}`;
-};
 
 export default function CadastroScreen({ navigation, route }) {
   const [form, setForm] = useState({
@@ -23,7 +28,6 @@ export default function CadastroScreen({ navigation, route }) {
   });
 
   const [modoEdicao, setModoEdicao] = useState(false);
-  const [usuarioId, setUsuarioId] = useState(null);
 
   // --- Ao entrar na tela ---
   useEffect(() => {
@@ -40,7 +44,7 @@ export default function CadastroScreen({ navigation, route }) {
         filialMatriz: usuarioParaEditar.filialMatriz || 'Filial',
         turno: usuarioParaEditar.turno || 'Manhã',
       });
-      setUsuarioId(usuarioParaEditar.id);
+
       setModoEdicao(true);
     }
   }, [route?.params]);
@@ -87,32 +91,34 @@ export default function CadastroScreen({ navigation, route }) {
       const usuarioLogado = route?.params?.usuario;
 
       if (modoEdicao) {
+        // ✔ Atualização correta (matrícula é o ID)
         await atualizarUsuario(
-          usuarioId,
+          form.matricula,
           form.nome,
           form.email,
           form.funcao,
           form.cpf,
-          form.matricula,
           form.filialMatriz,
           form.turno
         );
+
         Alert.alert('Sucesso', 'Usuário atualizado com sucesso!');
       } else {
-        const novaMatricula = gerarMatricula();
+        // ✔ Cadastro usando matrícula gerada automaticamente NO BANCO
         await inserirUsuario(
           form.nome,
           form.email,
           form.funcao,
           form.cpf,
-          novaMatricula,
           form.filialMatriz,
           form.turno
         );
+
         Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
       }
 
       navigation.navigate('Home', { usuario: usuarioLogado });
+
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);
       Alert.alert('Erro', `Falha ao salvar usuário: ${error.message}`);
@@ -130,6 +136,7 @@ export default function CadastroScreen({ navigation, route }) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
+            
             <Text style={styles.label}>Nome:</Text>
             <TextInput
               style={styles.input}
@@ -220,6 +227,7 @@ export default function CadastroScreen({ navigation, route }) {
                 </Text>
               </TouchableOpacity>
             </View>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

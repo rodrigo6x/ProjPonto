@@ -1,24 +1,24 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  safeArea: { 
-    flex: 1, 
-    backgroundColor: '#1c2520ff' 
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#1c2520ff'
   },
   container: {
-    marginTop: 100, 
-    flex: 1, 
-    padding: 16 
+    marginTop: 100,
+    flex: 1,
+    padding: 16
   },
-  title: { 
-    fontSize: 22, 
+  title: {
+    fontSize: 22,
     fontWeight: 'bold',
-    fontFamily: 'sans-serif-condensed', 
-    color: 'white', 
-    textAlign: 'center', 
-    marginBottom: 12 
+    fontFamily: 'sans-serif-condensed',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 12
   },
-  userInfo: { 
+  userInfo: {
     backgroundColor: '#e3f2fd',
     padding: 12,
     borderRadius: 6,
@@ -41,28 +41,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#444446ff',
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 8,  
+    borderRadius: 8,
   },
   buttonText: {
     color: '#ece9e9ff',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  dateText: {
+  dateText: { // Versão final mantida
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-  dateText: { 
-    fontSize: 16,
-    color:'white',
+    color: 'white',
     fontWeight: '600',
-    fontFamily: 'sans-serif-condensed' 
+    fontFamily: 'sans-serif-condensed'
   },
-  row: { 
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 8 
+    marginBottom: 8
   },
   rowSmall: {
     flexDirection: 'row',
@@ -71,58 +67,89 @@ const styles = StyleSheet.create({
   },
 
   botaoHoje: {
-    backgroundColor: '#9e9e9aff', // verde igual ao confirmar (ou mude se quiser)
+    backgroundColor: '#9e9e9aff',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
 
-  input: { 
+  input: {
     flex: 1,
     height: 44,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 6,
     paddingHorizontal: 10,
-    backgroundColor: 'white' 
+    backgroundColor: 'white'
   },
-  list: { 
+  list: {
     marginTop: 8
   },
-  item: { 
+  item: {
     backgroundColor: 'white',
     padding: 12,
     marginBottom: 8,
     borderRadius: 6,
     flexDirection: 'row',
-    alignItems: 'center' 
+    alignItems: 'center',
+    justifyContent: 'space-between', // Para alinhar Editar/Excluir
+    elevation: 2, // Sombra para Android
   },
-  tipo: { 
+  tipo: {
     fontSize: 16,
-    fontWeight: 'bold' 
+    fontWeight: 'bold'
   },
   hora: {
-    fontSize: 14, 
+    fontSize: 14,
     color: '#555'
+  },
+  data: { // Adicionado 'data' para consistência (existia no JS, mas faltava no estilo)
+    fontSize: 12,
+    color: '#999'
   },
   usuario: {
     fontSize: 12,
     color: '#666'
-   },
+  },
   local: {
     fontSize: 11,
-    color: '#999' 
+    color: '#999'
   },
-  empty: { 
+  empty: {
     textAlign: 'center',
     marginTop: 20,
-    color: '#666' 
+    color: '#fff' // Mudado para branco, devido ao fundo escuro
   },
   error: {
     color: 'red',
     textAlign: 'center',
-     marginTop: 8 
-    }
-  
+    marginTop: 8
+  },
+  // --- ESTILOS PARA O SELETOR RH (NOVO) ---
+  selectContainer: {
+    width: '100%', // Usa 100% da largura do container com padding 16
+    marginVertical: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingHorizontal: 5,
+    justifyContent: 'center',
+  },
+  selectLabel: {
+    fontSize: 14,
+    color: '#666',
+    paddingLeft: 5,
+    paddingTop: 5,
+  },
+  picker: {
+    height: 55,
+    width: '100%',
+  },
+  textoBotao: {
+    color: 'white',
+    fontWeight: 'bold',
+  }
+
 });
 export default styles;
