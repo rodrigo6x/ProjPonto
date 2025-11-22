@@ -42,23 +42,12 @@ export default function PontoScreen({ navigation, route }) {
     const [localizacao, setLocalizacao] = useState(null);
     const [ultimoRegistro, setUltimoRegistro] = useState(null);
     const [registrosHoje, setRegistrosHoje] = useState([]);
-    const [selectedUsuario, setSelectedUsuario] = useState(route?.params?.usuario);
 
     const [isRegistering, setIsRegistering] = useState(false);
     const [cameraVisible, setCameraVisible] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = useRef(null);
-
-    const usuarioAtual = route?.params?.usuario;
-
-    const getMatriculaAtual = () => {
-        if (selectedUsuario?.matricula) return selectedUsuario.matricula;
-        if (selectedUsuario?.id) return selectedUsuario.id;
-        if (usuarioAtual?.matricula) return usuarioAtual.matricula;
-        if (usuarioAtual?.id) return usuarioAtual.id;
-        return null;
-    };
 
     const isSameDay = (dataString, dateObj) => {
         if (!dataString) return false;
@@ -84,8 +73,9 @@ export default function PontoScreen({ navigation, route }) {
 
     const carregarUltimoRegistro = async (uid = null) => {
         try {
-            const targetId = uid || getMatriculaAtual();
-            if (!targetId) return;
+            // Simplificado: Usa a matrícula do usuário logado vindo da rota.
+            const targetId = uid || route?.params?.usuario?.matricula;
+            if (!targetId) return; // Se não houver matrícula, não faz nada.
 
             const registros = await listarPontos(targetId);
             const hoje = new Date();
@@ -154,8 +144,9 @@ export default function PontoScreen({ navigation, route }) {
     };
 
     const salvarFoto = async () => {
-        const matricula = getMatriculaAtual();
-        if (!matricula) return;
+        // Simplificado: Usa a matrícula diretamente do usuário da rota.
+        const matricula = route?.params?.usuario?.matricula;
+        if (!matricula) return; // Guarda de segurança
 
         try {
             // Calcula o tipo correto ANTES de registrar
@@ -238,13 +229,6 @@ export default function PontoScreen({ navigation, route }) {
             </View>
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[styles.button, styles.buttonPrimary, proximoLabel === "Jornada Finalizada" && { backgroundColor: '#FF6347' }]}
-                    onPress={registrarPontoFunc}
-                    disabled={isRegistering || cameraVisible || proximoLabel === "Jornada Finalizada"}>
-                    <Text style={styles.buttonText}>{proximoLabel}</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity
                     style={[styles.button, styles.buttonSecondary]}
                     onPress={() => navigation.goBack()}>

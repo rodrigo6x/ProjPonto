@@ -132,7 +132,11 @@ export async function inserirUsuario(nome, email, funcao, cpf, filialMatriz, tur
 // -------------------------------------------------------------
 export async function listarUsuarios() {
     const snap = await getDocs(collection(dbFirebase, "usuarios"));
-    return snap.docs.map(d => d.data());
+    // Corrigido: Mapeia os dados e inclui o ID do documento (que é a matrícula)
+    return snap.docs.map(doc => ({
+        id: doc.id, // O ID do documento do Firestore
+        ...doc.data()
+    }));
 }
 
 // -------------------------------------------------------------

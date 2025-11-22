@@ -16,6 +16,48 @@ import { Picker } from '@react-native-picker/picker';
 import { inserirUsuario, atualizarUsuario } from '../db/database';
 import styles from '../Style/CadastroScreenStyle';
 
+// --- Validação de CPF ---
+function validarCPF(cpf) {
+  cpf = String(cpf).replace(/[^\d]+/g, '');
+  if (cpf === '') return false;
+  // Elimina CPFs invalidos conhecidos
+  if (
+    cpf.length !== 11 ||
+    /^(.)\1+$/.test(cpf) // Verifica se todos os dígitos são iguais
+  ) {
+    return false;
+  }
+  // Valida 1o digito
+  let add = 0;
+  for (let i = 0; i < 9; i++) {
+    add += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let rev = 11 - (add % 11);
+  if (rev === 10 || rev === 11) {
+    rev = 0;
+  }
+  if (rev !== parseInt(cpf.charAt(9))) {
+    return false;
+  }
+  // Valida 2o digito
+  add = 0;
+  for (let i = 0; i < 10; i++) {
+    add += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  rev = 11 - (add % 11);
+  if (rev === 10 || rev === 11) {
+    rev = 0;
+  }
+  if (rev !== parseInt(cpf.charAt(10))) {
+    return false;
+  }
+  return true;
+}
+
+const formatarCPF = (value) => {
+  return value.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+};
+
 export default function CadastroScreen({ navigation, route }) {
   const [form, setForm] = useState({
     nome: '',
@@ -62,7 +104,8 @@ export default function CadastroScreen({ navigation, route }) {
     if (key === 'nome' || key === 'funcao') {
       value = value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toUpperCase();
     } else if (key === 'cpf') {
-      value = value.replace(/[^0-9]/g, '');
+      const apenasNumeros = value.replace(/[^0-9]/g, '');
+      value = formatarCPF(apenasNumeros.substring(0, 14));
     }
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -73,6 +116,7 @@ export default function CadastroScreen({ navigation, route }) {
     if (!nome.trim()) return 'Por favor, preencha o nome!';
     if (!email.trim()) return 'Por favor, preencha o e-mail!';
     if (!cpf.trim()) return 'Por favor, preencha o CPF!';
+    if (!validarCPF(cpf)) return 'O CPF informado é inválido!';
     if (!funcao.trim()) return 'Por favor, selecione uma função!';
     if (!filialMatriz.trim()) return 'Por favor, selecione Filial ou Matriz!';
     if (!turno.trim()) return 'Por favor, selecione um turno!';
@@ -97,7 +141,7 @@ export default function CadastroScreen({ navigation, route }) {
           form.nome,
           form.email,
           form.funcao,
-          form.cpf,
+          form.cpf.replace(/[^\d]+/g, ''), // Salva apenas números
           form.filialMatriz,
           form.turno
         );
@@ -109,7 +153,7 @@ export default function CadastroScreen({ navigation, route }) {
           form.nome,
           form.email,
           form.funcao,
-          form.cpf,
+          form.cpf.replace(/[^\d]+/g, ''), // Salva apenas números
           form.filialMatriz,
           form.turno
         );
@@ -161,6 +205,7 @@ export default function CadastroScreen({ navigation, route }) {
               onChangeText={(v) => handleChange('cpf', v)}
               placeholder="Digite seu CPF"
               keyboardType="numeric"
+              maxLength={14}
             />
 
             <Text style={styles.label}>Função:</Text>

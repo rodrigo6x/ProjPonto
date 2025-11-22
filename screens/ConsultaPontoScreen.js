@@ -219,8 +219,8 @@ export default function ConsultaPontoScreen({ route }) {
                 {
                     text: "Excluir", style: "destructive", onPress: async () => {
                         try {
-                            // Deleta o ponto. Se o deletarPonto do DB exige a matrícula, use:
-                            await deletarPonto(ponto.id, ponto.matricula);
+                            // Corrigido: A função deletarPonto espera apenas o ID do ponto.
+                            await deletarPonto(ponto.id);
                             carregarRegistros();
                         } catch (error) {
                             Alert.alert("Erro", "Não foi possível excluir o ponto.");

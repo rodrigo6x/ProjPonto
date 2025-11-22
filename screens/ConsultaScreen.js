@@ -42,8 +42,8 @@ export default function ConsultaScreen({ navigation, route }) {
       'Confirmar Exclusão',
       `Tem certeza que deseja deletar o usuário "${nome}"?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Deletar', style: 'destructive', onPress: () => deletarUsuarioConfirmado(id) }
+        { text: 'Cancelar', style: 'cancel' }, // AQUI: Passando item.matricula em vez de item.id
+        { text: 'Deletar', style: 'destructive', onPress: () => deletarUsuarioConfirmado(id) } // 'id' aqui é a matrícula
       ]
     );
   };
@@ -91,7 +91,7 @@ export default function ConsultaScreen({ navigation, route }) {
 
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => confirmarDeletar(item.id, item.nome)}
+            onPress={() => confirmarDeletar(item.matricula, item.nome)}
           >
             <Text style={styles.buttonText}>Deletar</Text>
           </TouchableOpacity>
@@ -129,7 +129,7 @@ export default function ConsultaScreen({ navigation, route }) {
           style={styles.flatList}
           data={usuarios}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+          keyExtractor={(item) => item.matricula?.toString() || Math.random().toString()}
           ListHeaderComponent={ListaHeader}
           ListEmptyComponent={
             <Text style={styles.emptyText}>Nenhum usuário encontrado</Text>
