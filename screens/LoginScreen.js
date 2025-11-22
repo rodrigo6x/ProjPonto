@@ -152,6 +152,7 @@ const LoginScreen = ({ navigation }) => {
           value={cpf}
           onChangeText={handleCpfChange}
           returnKeyType="done"
+          keyboardType="numeric"
           secureTextEntry={isCpfSecure}
           onSubmitEditing={handleLogin}
         />

@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   selectContainer: {
     width: '100%', // Usa 100% da largura do container com padding 16
     marginVertical: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f9f9f9ff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   selectLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#000000ff',
     paddingLeft: 5,
     paddingTop: 5,
   },
@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   }
+  
 
 });
 export default styles;

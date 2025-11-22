@@ -143,8 +143,10 @@ export default function ConsultaPontoScreen({ route }) {
 
     useEffect(() => {
         // Dispara o carregamento sempre que a data ou a matrícula mudar
-        carregarRegistros();
-    }, [dataSelecionada, usuarioMatricula, carregarRegistros]);
+        if (usuarioMatricula) { // <-- ADICIONADO: Só carrega se a matrícula estiver definida
+            carregarRegistros();
+        }
+    }, [dataSelecionada, usuarioMatricula, carregarRegistros]); // Mantém dependências
 
     // ... (restante das funções: alterarDia, voltarHoje)
     const alterarDia = (dias) => {
