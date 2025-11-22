@@ -230,7 +230,9 @@ export default function PontoScreen({ navigation, route }) {
             
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                    style={[styles.button, styles.buttonPrimary, (proximoLabel === "Jornada Finalizada" || isRegistering) && styles.buttonDisabled]}
+                    style={[styles.button, 
+                        proximoLabel === "Jornada Finalizada" ? styles.buttonFinalizado : styles.buttonPrimary,
+                        isRegistering && styles.buttonDisabled]}
                     onPress={registrarPontoFunc}
                     disabled={proximoLabel === "Jornada Finalizada" || isRegistering}
                 >

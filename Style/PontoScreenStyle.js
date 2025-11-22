@@ -70,6 +70,13 @@ const styles = StyleSheet.create({
   buttonSecondary: {
     backgroundColor: '#6d7277ff', // 🔴 Botão "Voltar"
   },
+  buttonFinalizado: {
+    backgroundColor: '#a12323ff', // 🟥 Vermelho para "Jornada Finalizada"
+  },
+  buttonDisabled: {
+    backgroundColor: '#9E9E9E', // 🔘 Cinza para desabilitado durante o registro
+    opacity: 0.7,
+  },
 
   buttonText: {
     color: '#fff',
