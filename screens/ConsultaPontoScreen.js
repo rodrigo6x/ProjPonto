@@ -253,13 +253,13 @@ export default function ConsultaPontoScreen({ navigation, route }) {
                 {isRH && (
                     <View style={{ flexDirection: 'row', marginTop: 5 }}>
                         <TouchableOpacity
-                            style={{ padding: 8, marginRight: 10, backgroundColor: '#e3f2fd', borderRadius: 5 }}
+                            style={{ padding: 8, marginRight: 10, backgroundColor: '#2c6448ff', borderRadius: 5 }}
                             onPress={() => abrirModalEdicao(item)}
                         >
-                            <Text style={{ color: '#325744ff' }}>Editar</Text>
+                            <Text style={{ color: '#fff' }}>Editar</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={{ padding: 8, backgroundColor: '#d32f2f', borderRadius: 5 }}
+                            style={{ padding: 8, backgroundColor: '#a12323ff', borderRadius: 5 }}
                             onPress={() => confirmarExclusao(item)}
                         >
                             <Text style={{ color: '#fff' }}>Excluir</Text>
