@@ -23,8 +23,8 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#373b41ff',
-    borderBottomWidth:4, //Detalhe em baixo da limha do botão
-    borderBottomColor: '#1a1818ff',//cor da limha do botão
+    borderBottomWidth:4, 
+    borderBottomColor: '#1a1818ff',
     padding: 15,
     borderRadius: 6,
     alignItems: 'center',
@@ -37,9 +37,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  // --- Estilo novo para o botão de sair ---
+  
   logoutButton: {
-    backgroundColor: '#573030ff', // Um tom de vermelho para diferenciar
+    backgroundColor: '#573030ff', 
   },
   header: {
     position: 'absolute',
@@ -55,5 +55,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.95
   }
+  
 });
 export default styles;

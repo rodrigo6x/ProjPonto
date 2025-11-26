@@ -13,8 +13,8 @@ const styles = StyleSheet.create({
   input: {
     fontFamily: 'sans-serif-condensed',
     backgroundColor: '#c0bdbdff',
-    borderBottomWidth:3, //Detalhe em baixo da limha do botão
-    borderBottomColor: '#252424ff',//cor da limha do botão
+    borderBottomWidth:3, 
+    borderBottomColor: '#252424ff',
     borderWidth: 1,
     borderColor: '#676774ff',
     padding: 10,
@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
   pickerContainer: {
     fontFamily: 'sans-serif-condensed',
     backgroundColor: '#c0bdbdff',
-    borderBottomWidth:3, //Detalhe em baixo da limha do botão
-    borderBottomColor: '#645a5aff',//cor da limha do botão
+    borderBottomWidth:3,
+    borderBottomColor: '#645a5aff',
     borderWidth: 1,
     borderColor: '#676774ff',
     borderRadius: 5,
@@ -45,10 +45,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
 },
   botaoVoltar: {
-    backgroundColor: '#373b41', // cinza
+    backgroundColor: '#373b41',
 },
   botaoConfirmar: {
-    backgroundColor: '#2c6448ff', // mesma cor que você já usa
+    backgroundColor: '#2c6448ff',
     
 },
   textoBotao: {
@@ -57,5 +57,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
 },
+
 });
 export default styles;

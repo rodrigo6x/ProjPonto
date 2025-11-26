@@ -7,7 +7,7 @@ const HomeScreen = ({ navigation, route }) => {
   const isRH = usuario?.funcao === 'RH';
   const isAdmin = usuario?.funcao === 'admin' || isRH;
 
-  // Define o texto de boas-vindas com base no sexo do usuário
+  
   const welcomeText = usuario?.sexo === 'Feminino' ? 'Bem-vinda!' : 'Bem-vindo!';
 
   const handleLogout = () => {
@@ -23,7 +23,7 @@ const HomeScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      {/* Cabeçalho */}
+      
       <View style={styles.header}>
         {usuario?.nome && (
           <Text style={styles.welcomeName}>Olá, {usuario.nome}</Text>
@@ -33,7 +33,7 @@ const HomeScreen = ({ navigation, route }) => {
       <Text style={styles.title}>{welcomeText}</Text>
       <Text style={styles.subtitle}>Escolha uma opção:</Text>
 
-      {/* Botões exclusivos para RH/Admin */}
+      
       {isAdmin && (
         <>
           <TouchableOpacity style={styles.button} onPress={() => handleNavigate('Cadastro')}>
@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation, route }) => {
         </>
       )}
 
-      {/* Botões visíveis a todos os usuários logados */}
+      
       {usuario ? (
         <>
           <TouchableOpacity style={styles.button} onPress={() => handleNavigate('Ponto')}>
@@ -63,7 +63,7 @@ const HomeScreen = ({ navigation, route }) => {
         </Text>
       )}
 
-      {/* Botão de Sair */}
+      
       <TouchableOpacity
         style={[styles.button, styles.logoutButton]}
         onPress={handleLogout}

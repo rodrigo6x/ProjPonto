@@ -5,18 +5,18 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker'; // <--- NOVO: Importa o Picker
+import { Picker } from '@react-native-picker/picker'; 
 import { Ionicons } from '@expo/vector-icons';
 
 import {
     listarPontosPorData,
     atualizarPonto,
     deletarPonto,
-    listarUsuarios // <--- NOVO: Importa a função para listar usuários
+    listarUsuarios 
 } from '../db/database';
 import styles from '../Style/ConsultaPontoScreenStyle.js';
 
-// --- DEFINIÇÕES DE PONTO (MANTIDAS) ---
+
 const TIPOS_VALIDOS = {
     CHEGADA: 'Chegada',
     ALMOCO: 'Almoço',
@@ -37,10 +37,7 @@ const TIPO_CHAVE_MAP = {
 const tipoLabel = (tipo) => {
     return TIPOS_VALIDOS[tipo] || 'Desconhecido';
 };
-// ---------------------------------------
 
-/** Helpers de Data (MANTIDOS) */
-// Corrigido para evitar mutação direta:
 const startOfDay = (date) => new Date(new Date(date).setHours(0, 0, 0, 0));
 const endOfDay = (date) => new Date(new Date(date).setHours(23, 59, 59, 999));
 
@@ -74,27 +71,27 @@ export default function ConsultaPontoScreen({ navigation, route }) {
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [novoTipo, setNovoTipo] = useState('');
 
-    // --- ESTADOS DE RH ---
+    
     const [todosUsuarios, setTodosUsuarios] = useState([]);
-    const [usuarioVisualizado, setUsuarioVisualizado] = useState(null); // O usuário cujos pontos serão exibidos
+    const [usuarioVisualizado, setUsuarioVisualizado] = useState(null); 
 
-    // O usuário que fez login
+    
     const usuarioLogado = route?.params?.usuario;
     const isRH = usuarioLogado?.funcao === 'RH';
 
-    // A MATRÍCULA CHAVE: Usa a do selecionado se for RH, ou a do logado se não for.
+    
     const usuarioMatricula = isRH
         ? usuarioVisualizado?.matricula
         : usuarioLogado?.matricula;
 
-    // NOVO: Carrega a lista de todos os usuários (apenas se for RH)
+    
     const carregarTodosUsuarios = useCallback(async () => {
         if (!isRH) return;
         try {
             const lista = await listarUsuarios();
             setTodosUsuarios(lista || []);
 
-            // Define o primeiro usuário como visualizado por padrão
+           
             const defaultUser = (lista || []).find(u => u.matricula === usuarioLogado?.matricula) || lista?.[0];
             setUsuarioVisualizado(defaultUser || null);
         } catch (error) {
@@ -119,7 +116,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
             const inicio = startOfDay(dataParaConsulta).getTime();
             const fim = endOfDay(new Date(dataParaConsulta)).getTime();
 
-            // Usa a matrícula DINÂMICA
+            
             let registrosCarregados = await listarPontosPorData(usuarioMatricula, inicio, fim);
             registrosCarregados.sort((a, b) => a.timestamp - b.timestamp);
 
@@ -133,24 +130,23 @@ export default function ConsultaPontoScreen({ navigation, route }) {
     }, [dataSelecionada, usuarioMatricula]);
 
 
-    // Efeitos de Inicialização e Recarregamento
+
     useEffect(() => {
         if (isRH) {
             carregarTodosUsuarios();
         } else {
-            // Se não for RH, define o usuário logado como o visualizado
+            
             setUsuarioVisualizado(usuarioLogado);
         }
     }, [usuarioLogado, isRH, carregarTodosUsuarios]);
 
     useEffect(() => {
-        // Dispara o carregamento sempre que a data ou a matrícula mudar
-        if (usuarioMatricula) { // <-- ADICIONADO: Só carrega se a matrícula estiver definida
+        
+        if (usuarioMatricula) { 
             carregarRegistros();
         }
-    }, [dataSelecionada, usuarioMatricula, carregarRegistros]); // Mantém dependências
-
-    // ... (restante das funções: alterarDia, voltarHoje)
+    }, [dataSelecionada, usuarioMatricula, carregarRegistros]); 
+    
     const alterarDia = (dias) => {
         const novaData = new Date(dataSelecionada);
         novaData.setDate(novaData.getDate() + dias);
@@ -177,7 +173,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
             return;
         }
 
-        // Garante que o ponto atualizado mantenha a matrícula correta (do usuário visualizado)
+       
         const matriculaParaEdicao = usuarioMatricula || pontoSelecionado.matricula;
         if (!matriculaParaEdicao) {
             Alert.alert("Erro", "Não foi possível identificar a matrícula para atualização.");
@@ -189,20 +185,20 @@ export default function ConsultaPontoScreen({ navigation, route }) {
 
         const novoTimestamp = dataBase.getTime();
 
-        // Validação de dia (MANTIDO)
+        
         if (novoTimestamp < startOfDay(new Date(dataSelecionada)).getTime() || novoTimestamp > endOfDay(new Date(dataSelecionada)).getTime()) {
             Alert.alert("Atenção", "A hora selecionada está fora do dia de consulta. Ajuste a hora.");
             return;
         }
 
         try {
-            // Se seu DB usa ID único, não precisa de matrícula aqui, mas se for necessário, use:
+            
             await atualizarPonto(pontoSelecionado.id, {
                 tipo: novoTipo,
                 timestamp: novoTimestamp,
                 hora: dataBase.toLocaleTimeString(),
                 data: dataBase.toLocaleDateString(),
-                matricula: matriculaParaEdicao // Inclui a matrícula (boa prática)
+                matricula: matriculaParaEdicao 
             });
 
             setModalVisivel(false);
@@ -223,7 +219,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
                 {
                     text: "Excluir", style: "destructive", onPress: async () => {
                         try {
-                            // Corrigido: A função deletarPonto espera apenas o ID do ponto.
+
                             await deletarPonto(ponto.id);
                             carregarRegistros();
                         } catch (error) {
@@ -249,7 +245,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
                     <Text style={styles.data}>{data}</Text>
                 </View>
 
-                {/* BOTÕES DE EDIÇÃO/EXCLUSÃO SÓ APARECEM PARA RH */}
+                
                 {isRH && (
                     <View style={{ flexDirection: 'row', marginTop: 5 }}>
                         <TouchableOpacity
@@ -274,7 +270,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
         if (loading) return <ActivityIndicator size="large" color="#759786ff" style={{ marginTop: 20 }} />;
         if (erro) return <Text style={styles.error}>Erro: {erro}</Text>;
 
-        // NOVO: Mensagem de instrução para RH
+        
         if (isRH && !usuarioMatricula) return <Text style={styles.empty}>Selecione um colaborador acima para visualizar os pontos.</Text>;
 
         if (registros.length === 0) return <Text style={styles.empty}>Nenhum registro encontrado para a data selecionada.</Text>;
@@ -296,7 +292,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
             <View style={styles.container}>
                 <Text style={styles.title}>Consulta de Pontos</Text>
 
-                {/* NOVO: SELETOR DE USUÁRIO PARA RH */}
+                
                 {isRH && (
                     <View style={styles.selectContainer}>
                         <Text style={styles.selectLabel}>Colaborador:</Text>
@@ -305,14 +301,13 @@ export default function ConsultaPontoScreen({ navigation, route }) {
                             onValueChange={(itemValue) => {
                                 const user = todosUsuarios.find(u => u.matricula === itemValue);
                                 setUsuarioVisualizado(user);
-                                // O useEffect fará o recarregamento
+                                
                             }}
                             style={styles.picker}
-                            enabled={!loading} // A cor do texto pode ser definida aqui também
-                            // Opção de placeholder (iOS) ou ajuste de estilo (Android)
+                            enabled={!loading} 
                             itemStyle={Platform.OS === 'ios' ? { height: 100, color: '#000' } : { color: '#000' }}
                         >
-                            {/* Garante que o picker mostre algo mesmo que a lista esteja vazia */}
+                            
                             {todosUsuarios.length === 0 && <Picker.Item label="Carregando..." value="" />}
 
                             {todosUsuarios.map((u) => (
@@ -357,7 +352,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
 
                 <Conteudo />
 
-                {/* Modal de edição (mantido) */}
+                
                 <Modal visible={modalVisivel} transparent animationType="slide">
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                         <View style={{ width: 300, padding: 20, backgroundColor: '#fff', borderRadius: 8 }}>
@@ -366,7 +361,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
                             <Text style={{ marginBottom: 5 }}>Ponto original: **{tipoLabel(pontoSelecionado?.tipo)}**</Text>
 
                             <View style={{ marginBottom: 15, borderWidth: 1, borderColor: '#ccc', borderRadius: 5, overflow: 'hidden' }}>
-                                {/* Seletor de Tipo */}
+                                
                                 {Object.entries(TIPOS_VALIDOS).map(([key, label]) => (
                                     <TouchableOpacity
                                         key={key}
@@ -381,7 +376,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
                                 ))}
                             </View>
 
-                            {/* Seletor de Hora */}
+                            
                             <TouchableOpacity onPress={() => setShowTimePicker(true)}>
                                 <Text style={{ padding: 10, borderWidth: 1, borderColor: '#325744ff', borderRadius: 5, textAlign: 'center', backgroundColor: '#e3f2fd', fontWeight: 'bold' }}>
                                     ⏰ Nova Hora: {horaSelecionada.toLocaleTimeString()}
@@ -413,7 +408,7 @@ export default function ConsultaPontoScreen({ navigation, route }) {
                     </View>
                 </Modal>
 
-                {/* Botão Flutuante de Voltar */}
+    
                 <TouchableOpacity
                     style={styles.botaoVoltarFlutuante}
                     onPress={() => navigation.goBack()}

@@ -16,18 +16,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { inserirUsuario, atualizarUsuario } from '../db/database';
 import styles from '../Style/CadastroScreenStyle';
 
-// --- Validação de CPF ---
+
 function validarCPF(cpf) {
   cpf = String(cpf).replace(/[^\d]+/g, '');
   if (cpf === '') return false;
-  // Elimina CPFs invalidos conhecidos
+
   if (
     cpf.length !== 11 ||
-    /^(.)\1+$/.test(cpf) // Verifica se todos os dígitos são iguais
+    /^(.)\1+$/.test(cpf)
   ) {
     return false;
   }
-  // Valida 1o digito
+  
   let add = 0;
   for (let i = 0; i < 9; i++) {
     add += parseInt(cpf.charAt(i)) * (10 - i);
@@ -39,7 +39,7 @@ function validarCPF(cpf) {
   if (rev !== parseInt(cpf.charAt(9))) {
     return false;
   }
-  // Valida 2o digito
+  
   add = 0;
   for (let i = 0; i < 10; i++) {
     add += parseInt(cpf.charAt(i)) * (11 - i);
@@ -66,13 +66,13 @@ export default function CadastroScreen({ navigation, route }) {
     matricula: '',
     filialMatriz: 'Filial',
     turno: 'Manhã',
-    sexo: 'Masculino', // Valor inicial para o novo campo
+    sexo: 'Masculino', 
     funcao: 'RH',
   });
 
   const [modoEdicao, setModoEdicao] = useState(false);
 
-  // --- Ao entrar na tela ---
+  
   useEffect(() => {
     const usuarioParaEditar = route?.params?.usuarioParaEditar;
     const editando = route?.params?.modoEdicao;
@@ -86,14 +86,14 @@ export default function CadastroScreen({ navigation, route }) {
         funcao: usuarioParaEditar.funcao || 'RH',
         filialMatriz: usuarioParaEditar.filialMatriz || 'Filial',
         turno: usuarioParaEditar.turno || 'Manhã',
-        sexo: usuarioParaEditar.sexo || 'Masculino', // Carrega o valor existente ou um padrão
+        sexo: usuarioParaEditar.sexo || 'Masculino', 
       });
 
       setModoEdicao(true);
     }
   }, [route?.params]);
 
-  // --- Bloqueia o botão físico "Voltar" se estiver editando ---
+  
   useEffect(() => {
     if (!modoEdicao) return;
     const onBackPress = () => true;
@@ -101,7 +101,7 @@ export default function CadastroScreen({ navigation, route }) {
     return () => sub.remove();
   }, [modoEdicao]);
 
-  // --- Manipuladores de entrada ---
+  
   const handleChange = (key, value) => {
     if (key === 'nome' || key === 'funcao') {
       value = value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toUpperCase();
@@ -112,7 +112,7 @@ export default function CadastroScreen({ navigation, route }) {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  // --- Validação simples ---
+  
   const validarCampos = () => {
     const { nome, email, cpf, funcao, filialMatriz, turno, sexo } = form;
     if (!nome.trim()) return 'Por favor, preencha o nome!';
@@ -121,12 +121,12 @@ export default function CadastroScreen({ navigation, route }) {
     if (!validarCPF(cpf)) return 'O CPF informado é inválido!';
     if (!funcao.trim()) return 'Por favor, selecione uma função!';
     if (!filialMatriz.trim()) return 'Por favor, selecione Filial ou Matriz!';
-    if (!sexo.trim()) return 'Por favor, selecione o sexo!'; // Validação para o novo campo
+    if (!sexo.trim()) return 'Por favor, selecione o sexo!';
     if (!turno.trim()) return 'Por favor, selecione um turno!';
     return null;
   };
 
-  // --- Enviar dados ---
+  
   const enviarDados = async () => {
     const erro = validarCampos();
     if (erro) {
@@ -138,29 +138,29 @@ export default function CadastroScreen({ navigation, route }) {
       const usuarioLogado = route?.params?.usuario;
 
       if (modoEdicao) {
-        // ✔ Atualização correta (matrícula é o ID)
+        
         await atualizarUsuario(
           form.matricula,
           form.nome,
           form.email,
           form.funcao,
-          form.cpf.replace(/[^\d]+/g, ''), // Salva apenas números
+          form.cpf.replace(/[^\d]+/g, ''),
           form.filialMatriz,
           form.turno,
-          form.sexo // Passa o novo valor
+          form.sexo 
         );
 
         Alert.alert('Sucesso', 'Usuário atualizado com sucesso!');
       } else {
-        // ✔ Cadastro usando matrícula gerada automaticamente NO BANCO
+        
         await inserirUsuario(
           form.nome,
           form.email,
           form.funcao,
-          form.cpf.replace(/[^\d]+/g, ''), // Salva apenas números
+          form.cpf.replace(/[^\d]+/g, ''),
           form.filialMatriz,
           form.turno,
-          form.sexo // Passa o novo valor
+          form.sexo
         );
 
         Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
@@ -221,7 +221,7 @@ export default function CadastroScreen({ navigation, route }) {
                 selectedValue={form.funcao}
                 onValueChange={(v) => handleChange('funcao', v)}
                 mode="dropdown"
-                style={{ color: '#000' }} // Adicionado para forçar a cor do texto
+                style={{ color: '#000' }} 
               >
                 <Picker.Item label="RH" value="RH" />
                 <Picker.Item label="Funcionário" value="Funcionario" />
@@ -245,7 +245,7 @@ export default function CadastroScreen({ navigation, route }) {
                 selectedValue={form.filialMatriz}
                 onValueChange={(v) => handleChange('filialMatriz', v)}
                 mode="dropdown"
-                style={{ color: '#000' }} // Adicionado para forçar a cor do texto
+                style={{ color: '#000' }} 
               >
                 <Picker.Item label="Filial" value="Filial" />
                 <Picker.Item label="Matriz" value="Matriz" />
@@ -271,7 +271,7 @@ export default function CadastroScreen({ navigation, route }) {
                 selectedValue={form.turno}
                 onValueChange={(v) => handleChange('turno', v)}
                 mode="dropdown"
-                style={{ color: '#000' }} // Adicionado para forçar a cor do texto
+                style={{ color: '#000' }} 
               >
                 <Picker.Item label="Manhã" value="Manhã" />
                 <Picker.Item label="Tarde" value="Tarde" />

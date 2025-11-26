@@ -10,7 +10,7 @@ export default function ConsultaScreen({ navigation, route }) {
   const [termoBusca, setTermoBusca] = useState('');
   const usuario = route?.params?.usuario;
 
-  /** 🔄 Carrega ou busca usuários */
+  
   const carregarUsuarios = useCallback(async (termo = '') => {
     try {
       console.log('🔍 Carregando usuários:', termo || 'Todos');
@@ -24,12 +24,12 @@ export default function ConsultaScreen({ navigation, route }) {
     }
   }, []);
 
-  /** 👀 Atualiza ao mudar termo de busca */
+  
   useEffect(() => {
     carregarUsuarios(termoBusca);
   }, [termoBusca, carregarUsuarios]);
 
-  /** 🔁 Atualiza ao voltar pra tela */
+  
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       setTermoBusca('');
@@ -38,19 +38,20 @@ export default function ConsultaScreen({ navigation, route }) {
     return unsubscribe;
   }, [navigation, carregarUsuarios]);
 
-  /** 🗑️ Confirmação de exclusão */
+ 
   const confirmarDeletar = (id, nome) => {
     Alert.alert(
       'Confirmar Exclusão',
       `Tem certeza que deseja deletar o usuário "${nome}"?`,
       [
-        { text: 'Cancelar', style: 'cancel' }, // AQUI: Passando item.matricula em vez de item.id
-        { text: 'Deletar', style: 'destructive', onPress: () => deletarUsuarioConfirmado(id) } // 'id' aqui é a matrícula
+        { text: 'Cancelar', style: 'cancel' }, 
+        { text: 'Deletar', style: 'destructive', onPress: () => deletarUsuarioConfirmado(id) } 
+      
       ]
     );
   };
 
-  /** 🧹 Exclusão no banco */
+  
   const deletarUsuarioConfirmado = async (id) => {
     try {
       await deletarUsuario(id);
@@ -61,7 +62,7 @@ export default function ConsultaScreen({ navigation, route }) {
     }
   };
 
-  /** ✏️ Editar usuário existente */
+  
   const editarUsuario = (usuarioParaEditar) => {
     navigation.navigate('Cadastro', {
       usuario,
@@ -70,7 +71,7 @@ export default function ConsultaScreen({ navigation, route }) {
     });
   };
 
-  /** 🧱 Renderização de cada item */
+  
   const renderItem = ({ item }) => {
     if (!item) return null;
 
@@ -103,7 +104,7 @@ export default function ConsultaScreen({ navigation, route }) {
     );
   };
 
-  /** 🔝 Cabeçalho da lista (com busca e botão de cadastro) */
+  
   const ListaHeader = () => (
     <View>
       <Text style={styles.titulo}>Lista de Usuários</Text>
@@ -124,7 +125,7 @@ export default function ConsultaScreen({ navigation, route }) {
     </View>
   );
 
-  /** 🧾 Render principal */
+  
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -146,7 +147,7 @@ export default function ConsultaScreen({ navigation, route }) {
         />
       </View>
 
-      {/* Botão Flutuante de Voltar */}
+      
       <TouchableOpacity
         style={styles.botaoVoltarFlutuante}
         onPress={() => navigation.goBack()}

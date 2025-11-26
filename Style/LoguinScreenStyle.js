@@ -5,11 +5,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#1c2520ff', // Um fundo escuro pra combinar
+    backgroundColor: '#1c2520ff',
   },
   icon: {
-    fontSize: 90, // Tamanho do ícone
-    color: '#466d5aff', // Um tom de verde mais suave
+    fontSize: 90, 
+    color: '#466d5aff', 
     alignSelf: 'center',
     marginBottom: 25,
   },
@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     fontFamily: 'sans-serif-condensed',
-    color: '#fff', // cor do título
+    color: '#fff', 
     textAlign: 'center',
     marginBottom: 10,
   },
@@ -30,8 +30,8 @@ const styles = StyleSheet.create({
   input: {
     
     fontFamily: 'sans-serif-condensed',
-    borderBottomWidth:4, //Detalhe em baixo da limha do botão
-    borderBottomColor: '#1a1818ff',//cor da limha do botão
+    borderBottomWidth:4, 
+    borderBottomColor: '#1a1818ff',
     backgroundColor: '#4d5055ff',
     color: '#fff',
     borderRadius: 6,
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     marginBottom: 15,
   },
-  // Novo container para o input de CPF com o ícone
+  
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -54,9 +54,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   button: {  
-   borderBottomWidth:4, //Detalhe em baixo da limha do botão
-    borderBottomColor: '#223a25ff',//cor da limha do botão
-    backgroundColor: '#2c6448ff', // Azul do seu menu
+   borderBottomWidth:4, 
+    borderBottomColor: '#223a25ff',
+    backgroundColor: '#2c6448ff', 
     padding: 15,
     borderRadius: 6,
     alignItems: 'center',
@@ -68,5 +68,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  
 });
 export default styles;

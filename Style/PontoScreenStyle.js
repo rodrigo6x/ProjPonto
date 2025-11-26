@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  /* 🟢 NOVOS ESTILOS PARA OS BOTÕES (TouchableOpacity) */
+
   button: {
     flex: 1,
     alignItems: 'center',
@@ -65,16 +65,16 @@ const styles = StyleSheet.create({
 
   },
   buttonPrimary: {
-    backgroundColor: '#1d6943ff', // 🔵 Botão "Registrar"
+    backgroundColor: '#1d6943ff', 
   },
   buttonSecondary: {
-    backgroundColor: '#6d7277ff', // 🔴 Botão "Voltar"
+    backgroundColor: '#6d7277ff',
   },
   buttonFinalizado: {
-    backgroundColor: '#a12323ff', // 🟥 Vermelho para "Jornada Finalizada"
+    backgroundColor: '#a12323ff', 
   },
   buttonDisabled: {
-    backgroundColor: '#9E9E9E', // 🔘 Cinza para desabilitado durante o registro
+    backgroundColor: '#9E9E9E', 
     opacity: 0.7,
   },
 
@@ -205,5 +205,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+
 });
 export default styles;

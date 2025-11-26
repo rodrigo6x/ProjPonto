@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  dateText: { // Versão final mantida
+  dateText: { 
     fontSize: 16,
     color: 'white',
     fontWeight: '600',
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // Para alinhar Editar/Excluir
-    elevation: 2, // Sombra para Android
+    justifyContent: 'space-between',
+    elevation: 2,
   },
   tipo: {
     fontSize: 16,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555'
   },
-  data: { // Adicionado 'data' para consistência (existia no JS, mas faltava no estilo)
+  data: { 
     fontSize: 12,
     color: '#999'
   },
@@ -150,25 +150,23 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-  // --- Estilo para o botão flutuante de voltar ---
+  
   botaoVoltarFlutuante: {
     position: 'absolute',
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#2c6448ff', // Cor primária verde
+    backgroundColor: '#2c6448ff',
     justifyContent: 'center',
     alignItems: 'center',
     bottom: 30,
     right: 20,
-    elevation: 8, // Sombra para Android
-    // Sombra para iOS
+    elevation: 8, 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   }
   
-
 });
 export default styles;

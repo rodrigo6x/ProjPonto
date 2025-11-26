@@ -9,7 +9,7 @@ import {
 } from '../db/database';
 import styles from '../Style/PontoScreenStyle.js';
 
-// ** Função Auxiliar de Sequenciamento **
+
 const ordem = ['CHEGADA', 'ALMOCO', 'TERMINO_ALMOCO', 'SAIDA'];
 const labels = {
     CHEGADA: 'Registrar Chegada',
@@ -18,7 +18,7 @@ const labels = {
     SAIDA: 'Registrar Saída'
 };
 
-// NOVO: Objeto para os textos do histórico
+    
 const labelsHistorico = {
     CHEGADA: 'Chegada',
     ALMOCO: 'Almoço',
@@ -38,10 +38,10 @@ const calcularProximoTipo = (ultimoRegistro) => {
         return { tipo: proximoTipo, label: labels[proximoTipo] };
     }
     
-    // Se o último foi SAIDA, ou se o tipo é o último na ordem
+    
     return { tipo: null, label: "Jornada Finalizada" };
 };
-// ** Fim Função Auxiliar **
+    
 
 
 export default function PontoScreen({ navigation, route }) {
@@ -59,7 +59,7 @@ export default function PontoScreen({ navigation, route }) {
 
     const isSameDay = (dataString, dateObj) => {
         if (!dataString) return false;
-        // Assume que a dataString está no formato DD/MM/AAAA (pt-BR)
+     
         const [dia, mes, ano] = dataString.split("/").map(Number); 
         return ano === dateObj.getFullYear() && (mes - 1) === dateObj.getMonth() && dia === dateObj.getDate();
     };
@@ -81,9 +81,9 @@ export default function PontoScreen({ navigation, route }) {
 
     const carregarUltimoRegistro = async (uid = null) => {
         try {
-            // Simplificado: Usa a matrícula do usuário logado vindo da rota.
+     
             const targetId = uid || route?.params?.usuario?.matricula;
-            if (!targetId) return; // Se não houver matrícula, não faz nada.
+            if (!targetId) return; 
 
             const registros = await listarPontos(targetId);
             const hoje = new Date();
@@ -119,7 +119,7 @@ export default function PontoScreen({ navigation, route }) {
 
             setCameraVisible(true);
 
-            // Tenta obter a localização de forma assíncrona
+
             (async () => {
                 try {
                     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -152,12 +152,12 @@ export default function PontoScreen({ navigation, route }) {
     };
 
     const salvarFoto = async () => {
-        // Simplificado: Usa a matrícula diretamente do usuário da rota.
+
         const matricula = route?.params?.usuario?.matricula;
-        if (!matricula) return; // Guarda de segurança
+        if (!matricula) return; 
 
         try {
-            // Calcula o tipo correto ANTES de registrar
+
             const { tipo: proximoTipoASalvar } = calcularProximoTipo(ultimoRegistro);
             
             if (proximoTipoASalvar === null) {

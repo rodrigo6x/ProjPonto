@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#425249ff', // Movido de 'container' para cá
+        backgroundColor: '#425249ff', 
     },
     container: {
         flex: 1,
@@ -13,8 +13,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#373b41ff',
         marginBottom: 10,
         paddingVertical: 11,
-        borderBottomWidth:4, //Detalhe em baixo da limha do botão
-        borderBottomColor: '#302a2aff',//cor da limha do botão
+        borderBottomWidth:4, 
+        borderBottomColor: '#302a2aff',
         borderRadius: 8,
         alignItems: 'center',
         marginBottom: 10
@@ -34,12 +34,12 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20
     },
-    // --- Estilo para o campo de busca ---
+   
     inputBusca: {
         height: 45,
         borderColor: '#ccc',
-        borderBottomWidth:4, //Detalhe em baixo da limha do botão
-        borderBottomColor: '#b9b1b1ff',//cor da limha do botão
+        borderBottomWidth:4, 
+        borderBottomColor: '#b9b1b1ff',
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
@@ -66,14 +66,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 5
     },
-    // --- Estilo genérico para os outros textos ---
+
     infoText: {
         fontSize: 16,
         fontFamily: 'sans-serif-condensed',
         color: '#666',
         marginBottom: 3
     },
-    // Removi os estilos 'email' e 'telefone' que não estavam sendo usados
+
     buttonContainer: {
         flexDirection: 'row',
         gap: 10
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
         borderRadius: 5
     },
     deleteButton: {
-        backgroundColor: '#a12323ff', // Um tom de vermelho para diferenciar
+        backgroundColor: '#a12323ff', 
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 5
@@ -120,5 +120,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
   }
+  
 });
 export default styles;

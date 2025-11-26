@@ -22,10 +22,10 @@ const LoginScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const cpfInputRef = useRef(null);
 
-  // Estado para controlar a visibilidade da senha (CPF)
+  
   const [isCpfSecure, setIsCpfSecure] = useState(true);
 
-  // Animações
+  
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 
@@ -49,7 +49,7 @@ const LoginScreen = ({ navigation }) => {
     return () => sound.current.unloadAsync();
   }, []);
 
-  // Login
+  
   const handleLogin = async () => {
     if (!email || !cpf) {
       Alert.alert('Erro', 'Por favor, preencha o e-mail e o CPF!');
@@ -111,7 +111,7 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.title}>Acesso ao Sistema</Text>
         <Text style={styles.subtitle}>Faça o login para continuar</Text>
 
-        {/* EMAIL */}
+        
         <TextInput
           style={styles.input}
           placeholder="Digite seu e-mail"
@@ -124,7 +124,7 @@ const LoginScreen = ({ navigation }) => {
           onSubmitEditing={() => cpfInputRef.current?.focus()}
         />
 
-        {/* CPF */}
+        
         <View style={styles.inputContainer}>
           <TextInput
             ref={cpfInputRef}
@@ -135,7 +135,7 @@ const LoginScreen = ({ navigation }) => {
             onChangeText={setCpf}
             returnKeyType="done"
             keyboardType="number-pad"
-            secureTextEntry={isCpfSecure} // <-- AQUI ESTÁ A PROPRIEDADE
+            secureTextEntry={isCpfSecure} 
             onSubmitEditing={handleLogin}
           />
           <TouchableOpacity 
