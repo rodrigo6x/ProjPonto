@@ -1,38 +1,10 @@
 {
   "expo": {
-    "name": "PontoEletronico",
-    "slug": "PontoEletronico",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.xgomawo.PontoEletronico"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-sqlite"
-    ],
     "extra": {
       "eas": {
-        "projectId": "5f3e9493-09a2-4be7-a409-90a8f5013899"
+        "projectId": "6f3aebb7-854b-4481-8770-7614abeb1684"
       }
-    }
+    },
+    "owner": "xgomawo"
   }
 }

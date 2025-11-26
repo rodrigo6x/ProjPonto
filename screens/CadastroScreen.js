@@ -151,6 +151,7 @@ export default function CadastroScreen({ navigation, route }) {
         );
 
         Alert.alert('Sucesso', 'Usuário atualizado com sucesso!');
+        navigation.goBack(); // Volta para a tela de Consulta
       } else {
         
         await inserirUsuario(
@@ -164,9 +165,8 @@ export default function CadastroScreen({ navigation, route }) {
         );
 
         Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
+        navigation.navigate('Home', { usuario: usuarioLogado });
       }
-
-      navigation.navigate('Home', { usuario: usuarioLogado });
 
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);

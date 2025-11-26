@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View, Text, TouchableOpacity, ActivityIndicator, FlatList,
-    Platform, Modal, Alert
-} from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, Platform, Modal, Alert} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; 
 import { Ionicons } from '@expo/vector-icons';
-
-import {
-    listarPontosPorData,
-    atualizarPonto,
-    deletarPonto,
-    listarUsuarios 
-} from '../db/database';
+import { listarPontosPorData, atualizarPonto, deletarPonto, listarUsuarios} from '../db/database';
 import styles from '../Style/ConsultaPontoScreenStyle.js';
 
 
@@ -64,14 +55,11 @@ export default function ConsultaPontoScreen({ navigation, route }) {
     const [registros, setRegistros] = useState([]);
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState(null);
-
     const [modalVisivel, setModalVisivel] = useState(false);
     const [pontoSelecionado, setPontoSelecionado] = useState(null);
     const [horaSelecionada, setHoraSelecionada] = useState(new Date());
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [novoTipo, setNovoTipo] = useState('');
-
-    
     const [todosUsuarios, setTodosUsuarios] = useState([]);
     const [usuarioVisualizado, setUsuarioVisualizado] = useState(null); 
 

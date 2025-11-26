@@ -95,7 +95,7 @@ export default function ConsultaScreen({ navigation, route }) {
 
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => confirmarDeletar(item.matricula, item.nome)}
+            onPress={() => confirmarDeletar(item.id, item.nome)}
           >
             <Text style={styles.buttonText}>Deletar</Text>
           </TouchableOpacity>
@@ -133,7 +133,7 @@ export default function ConsultaScreen({ navigation, route }) {
           style={styles.flatList}
           data={usuarios}
           renderItem={renderItem}
-          keyExtractor={(item) => item.matricula?.toString() || Math.random().toString()}
+          keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
           ListHeaderComponent={ListaHeader}
           ListEmptyComponent={
             <Text style={styles.emptyText}>Nenhum usuário encontrado</Text>

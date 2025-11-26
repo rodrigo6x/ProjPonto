@@ -1,12 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    View, Text, Alert, TouchableOpacity, Image
-} from 'react-native';
+import { View, Text, Alert, TouchableOpacity, Image} from 'react-native';
 import * as Location from 'expo-location';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import {
-    registrarPonto, listarPontos
-} from '../db/database';
+import { registrarPonto, listarPontos} from '../db/database';
 import styles from '../Style/PontoScreenStyle.js';
 
 
