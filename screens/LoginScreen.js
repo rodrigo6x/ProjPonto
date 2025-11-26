@@ -11,7 +11,7 @@ import {
   Platform,
   Animated,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { autenticarUsuario } from '../db/database';
 import styles from '../Style/LoguinScreenStyle.js';
@@ -22,11 +22,8 @@ const LoginScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const cpfInputRef = useRef(null);
 
-  // Estado da máscara
-  const [isCpfSecure, setIsCpfSecure] = useState(false);
-
-  // Controle do timer
-  const secureTimerRef = useRef(null);
+  // Estado para controlar a visibilidade da senha (CPF)
+  const [isCpfSecure, setIsCpfSecure] = useState(true);
 
   // Animações
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -50,22 +47,6 @@ const LoginScreen = ({ navigation }) => {
 
     loadSound();
     return () => sound.current.unloadAsync();
-  }, []);
-
-  // Máscara automática com timer
-  const handleCpfChange = (text) => {
-    setCpf(text);
-    setIsCpfSecure(false);
-
-    if (secureTimerRef.current) clearTimeout(secureTimerRef.current);
-
-    secureTimerRef.current = setTimeout(() => {
-      setIsCpfSecure(true);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    return () => clearTimeout(secureTimerRef.current);
   }, []);
 
   // Login
@@ -144,18 +125,25 @@ const LoginScreen = ({ navigation }) => {
         />
 
         {/* CPF */}
-        <TextInput
-          ref={cpfInputRef}
-          style={styles.input}
-          placeholder="Digite seu CPF"
-          placeholderTextColor="#888"
-          value={cpf}
-          onChangeText={handleCpfChange}
-          returnKeyType="done"
-          keyboardType="numeric"
-          secureTextEntry={isCpfSecure}
-          onSubmitEditing={handleLogin}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            ref={cpfInputRef}
+            style={[styles.input, { flex: 1, marginBottom: 0, borderBottomWidth: 0 }]}
+            placeholder="Digite seu CPF"
+            placeholderTextColor="#888"
+            value={cpf}
+            onChangeText={setCpf}
+            returnKeyType="done"
+            keyboardType="number-pad"
+            secureTextEntry={isCpfSecure} // <-- AQUI ESTÁ A PROPRIEDADE
+            onSubmitEditing={handleLogin}
+          />
+          <TouchableOpacity 
+            style={styles.eyeIcon}
+            onPress={() => setIsCpfSecure(prevState => !prevState)}>
+            <Ionicons name={isCpfSecure ? "eye-off" : "eye"} size={24} color="#888" />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity 
           style={styles.button} 

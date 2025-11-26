@@ -149,6 +149,24 @@ const styles = StyleSheet.create({
   textoBotao: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  // --- Estilo para o botão flutuante de voltar ---
+  botaoVoltarFlutuante: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#2c6448ff', // Cor primária verde
+    justifyContent: 'center',
+    alignItems: 'center',
+    bottom: 30,
+    right: 20,
+    elevation: 8, // Sombra para Android
+    // Sombra para iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   }
   
 

@@ -7,6 +7,9 @@ const HomeScreen = ({ navigation, route }) => {
   const isRH = usuario?.funcao === 'RH';
   const isAdmin = usuario?.funcao === 'admin' || isRH;
 
+  // Define o texto de boas-vindas com base no sexo do usuário
+  const welcomeText = usuario?.sexo === 'Feminino' ? 'Bem-vinda!' : 'Bem-vindo!';
+
   const handleLogout = () => {
     navigation.reset({
       index: 0,
@@ -27,7 +30,7 @@ const HomeScreen = ({ navigation, route }) => {
         )}
       </View>
 
-      <Text style={styles.title}>Bem-vindo!</Text>
+      <Text style={styles.title}>{welcomeText}</Text>
       <Text style={styles.subtitle}>Escolha uma opção:</Text>
 
       {/* Botões exclusivos para RH/Admin */}

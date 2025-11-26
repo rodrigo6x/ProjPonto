@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    SafeAreaView, View, Text, TouchableOpacity, ActivityIndicator, FlatList,
+    View, Text, TouchableOpacity, ActivityIndicator, FlatList,
     Platform, Modal, Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // <--- NOVO: Importa o Picker
+import { Ionicons } from '@expo/vector-icons';
 
 import {
     listarPontosPorData,
@@ -60,7 +62,7 @@ const formatDate = (record) => {
     }
 };
 
-export default function ConsultaPontoScreen({ route }) {
+export default function ConsultaPontoScreen({ navigation, route }) {
     const [dataSelecionada, setDataSelecionada] = useState(new Date());
     const [registros, setRegistros] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -306,9 +308,9 @@ export default function ConsultaPontoScreen({ route }) {
                                 // O useEffect fará o recarregamento
                             }}
                             style={styles.picker}
-                            enabled={!loading}
+                            enabled={!loading} // A cor do texto pode ser definida aqui também
                             // Opção de placeholder (iOS) ou ajuste de estilo (Android)
-                            itemStyle={Platform.OS === 'ios' ? { height: 100 } : {}}
+                            itemStyle={Platform.OS === 'ios' ? { height: 100, color: '#000' } : { color: '#000' }}
                         >
                             {/* Garante que o picker mostre algo mesmo que a lista esteja vazia */}
                             {todosUsuarios.length === 0 && <Picker.Item label="Carregando..." value="" />}
@@ -410,6 +412,14 @@ export default function ConsultaPontoScreen({ route }) {
                         </View>
                     </View>
                 </Modal>
+
+                {/* Botão Flutuante de Voltar */}
+                <TouchableOpacity
+                    style={styles.botaoVoltarFlutuante}
+                    onPress={() => navigation.goBack()}
+                >
+                    <Ionicons name="arrow-back" size={28} color="white" />
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );

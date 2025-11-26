@@ -14,9 +14,17 @@ const ordem = ['CHEGADA', 'ALMOCO', 'TERMINO_ALMOCO', 'SAIDA'];
 const labels = {
     CHEGADA: 'Registrar Chegada',
     ALMOCO: 'Registrar Almoço',
-    TERMINO_ALMOCO: 'Registrar Término do Almoço',
+    TERMINO_ALMOCO: 'Registrar Término',
     SAIDA: 'Registrar Saída'
 };
+
+// NOVO: Objeto para os textos do histórico
+const labelsHistorico = {
+    CHEGADA: 'Chegada',
+    ALMOCO: 'Almoço',
+    TERMINO_ALMOCO: 'Término Almoço',
+    SAIDA: 'Saída'
+}
 
 const calcularProximoTipo = (ultimoRegistro) => {
     if (!ultimoRegistro || !ultimoRegistro.tipo || ordem.indexOf(ultimoRegistro.tipo) === -1) {
@@ -222,7 +230,7 @@ export default function PontoScreen({ navigation, route }) {
                 ) : (
                     registrosHoje.map((r, i) => (
                         <View key={`${r.tipo}_${i}`} style={styles.registroContainer}>
-                            <Text style={styles.ultimoRegistroInfo}>{labels[r.tipo] || r.tipo} - {r.hora}</Text>
+                            <Text style={styles.ultimoRegistroInfo}>{labelsHistorico[r.tipo] || r.tipo} - {r.hora}</Text>
                         </View>
                     ))
                 )}

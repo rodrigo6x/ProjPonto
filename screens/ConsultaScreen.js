@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView, View, Text, FlatList, Alert, TouchableOpacity, TextInput, Platform} from 'react-native';
+import { View, Text, FlatList, Alert, TouchableOpacity, TextInput, Platform} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { listarUsuarios, deletarUsuario, buscarUsuarios } from '../db/database';
+import { Ionicons } from '@expo/vector-icons';
 import styles from '../Style/ConsultaScreenStyle.js';
 
 export default function ConsultaScreen({ navigation, route }) {
@@ -79,6 +81,7 @@ export default function ConsultaScreen({ navigation, route }) {
           <Text style={styles.infoText}>Matrícula: {item.matricula || 'N/A'}</Text>
           <Text style={styles.infoText}>Função: {item.funcao || 'N/A'}</Text>
           <Text style={styles.infoText}>CPF: {item.cpf || 'N/A'}</Text>
+          <Text style={styles.infoText}>Sexo: {item.sexo || 'N/A'}</Text>
         </View>
 
         <View style={styles.buttonContainer}>
@@ -142,6 +145,14 @@ export default function ConsultaScreen({ navigation, route }) {
           keyboardDismissMode="on-drag"
         />
       </View>
+
+      {/* Botão Flutuante de Voltar */}
+      <TouchableOpacity
+        style={styles.botaoVoltarFlutuante}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={28} color="white" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }

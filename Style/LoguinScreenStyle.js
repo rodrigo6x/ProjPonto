@@ -40,8 +40,20 @@ const styles = StyleSheet.create({
     fontSize: 17,
     marginBottom: 15,
   },
-  button: {
-    
+  // Novo container para o input de CPF com o ícone
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4d5055ff',
+    borderRadius: 6,
+    marginBottom: 15,
+    borderBottomWidth:4,
+    borderBottomColor: '#1a1818ff',
+  },
+  eyeIcon: {
+    paddingHorizontal: 15,
+  },
+  button: {  
    borderBottomWidth:4, //Detalhe em baixo da limha do botão
     borderBottomColor: '#223a25ff',//cor da limha do botão
     backgroundColor: '#2c6448ff', // Azul do seu menu

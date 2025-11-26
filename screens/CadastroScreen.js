@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  SafeAreaView, 
   TouchableOpacity, 
   KeyboardAvoidingView, 
   ScrollView, 
@@ -12,6 +11,7 @@ import {
   Alert 
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { inserirUsuario, atualizarUsuario } from '../db/database';
 import styles from '../Style/CadastroScreenStyle';
@@ -66,6 +66,7 @@ export default function CadastroScreen({ navigation, route }) {
     matricula: '',
     filialMatriz: 'Filial',
     turno: 'Manhã',
+    sexo: 'Masculino', // Valor inicial para o novo campo
     funcao: 'RH',
   });
 
@@ -85,6 +86,7 @@ export default function CadastroScreen({ navigation, route }) {
         funcao: usuarioParaEditar.funcao || 'RH',
         filialMatriz: usuarioParaEditar.filialMatriz || 'Filial',
         turno: usuarioParaEditar.turno || 'Manhã',
+        sexo: usuarioParaEditar.sexo || 'Masculino', // Carrega o valor existente ou um padrão
       });
 
       setModoEdicao(true);
@@ -112,13 +114,14 @@ export default function CadastroScreen({ navigation, route }) {
 
   // --- Validação simples ---
   const validarCampos = () => {
-    const { nome, email, cpf, funcao, filialMatriz, turno } = form;
+    const { nome, email, cpf, funcao, filialMatriz, turno, sexo } = form;
     if (!nome.trim()) return 'Por favor, preencha o nome!';
     if (!email.trim()) return 'Por favor, preencha o e-mail!';
     if (!cpf.trim()) return 'Por favor, preencha o CPF!';
     if (!validarCPF(cpf)) return 'O CPF informado é inválido!';
     if (!funcao.trim()) return 'Por favor, selecione uma função!';
     if (!filialMatriz.trim()) return 'Por favor, selecione Filial ou Matriz!';
+    if (!sexo.trim()) return 'Por favor, selecione o sexo!'; // Validação para o novo campo
     if (!turno.trim()) return 'Por favor, selecione um turno!';
     return null;
   };
@@ -143,7 +146,8 @@ export default function CadastroScreen({ navigation, route }) {
           form.funcao,
           form.cpf.replace(/[^\d]+/g, ''), // Salva apenas números
           form.filialMatriz,
-          form.turno
+          form.turno,
+          form.sexo // Passa o novo valor
         );
 
         Alert.alert('Sucesso', 'Usuário atualizado com sucesso!');
@@ -155,7 +159,8 @@ export default function CadastroScreen({ navigation, route }) {
           form.funcao,
           form.cpf.replace(/[^\d]+/g, ''), // Salva apenas números
           form.filialMatriz,
-          form.turno
+          form.turno,
+          form.sexo // Passa o novo valor
         );
 
         Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
@@ -183,24 +188,26 @@ export default function CadastroScreen({ navigation, route }) {
             
             <Text style={styles.label}>Nome:</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: '#000' }]}
               value={form.nome}
               onChangeText={(v) => handleChange('nome', v)}
               placeholder="Digite seu nome"
+              placeholderTextColor="#888"
             />
 
             <Text style={styles.label}>Email:</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: '#000' }]}
               value={form.email}
               onChangeText={(v) => handleChange('email', v)}
               placeholder="Digite seu e-mail"
               keyboardType="email-address"
+              placeholderTextColor="#888"
             />
 
             <Text style={styles.label}>CPF:</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: '#000' }]}
               value={form.cpf}
               onChangeText={(v) => handleChange('cpf', v)}
               placeholder="Digite seu CPF"
@@ -214,6 +221,7 @@ export default function CadastroScreen({ navigation, route }) {
                 selectedValue={form.funcao}
                 onValueChange={(v) => handleChange('funcao', v)}
                 mode="dropdown"
+                style={{ color: '#000' }} // Adicionado para forçar a cor do texto
               >
                 <Picker.Item label="RH" value="RH" />
                 <Picker.Item label="Funcionário" value="Funcionario" />
@@ -224,7 +232,7 @@ export default function CadastroScreen({ navigation, route }) {
               <>
                 <Text style={styles.label}>Matrícula:</Text>
                 <TextInput
-                  style={[styles.input, styles.inputDisabled]}
+                  style={[styles.input, styles.inputDisabled, { color: '#555' }]}
                   value={form.matricula}
                   editable={false}
                 />
@@ -237,9 +245,23 @@ export default function CadastroScreen({ navigation, route }) {
                 selectedValue={form.filialMatriz}
                 onValueChange={(v) => handleChange('filialMatriz', v)}
                 mode="dropdown"
+                style={{ color: '#000' }} // Adicionado para forçar a cor do texto
               >
                 <Picker.Item label="Filial" value="Filial" />
                 <Picker.Item label="Matriz" value="Matriz" />
+              </Picker>
+            </View>
+
+            <Text style={styles.label}>Sexo:</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={form.sexo}
+                onValueChange={(v) => handleChange('sexo', v)}
+                mode="dropdown"
+                style={{ color: '#000' }}
+              >
+                <Picker.Item label="Masculino" value="Masculino" />
+                <Picker.Item label="Feminino" value="Feminino" />
               </Picker>
             </View>
 
@@ -249,6 +271,7 @@ export default function CadastroScreen({ navigation, route }) {
                 selectedValue={form.turno}
                 onValueChange={(v) => handleChange('turno', v)}
                 mode="dropdown"
+                style={{ color: '#000' }} // Adicionado para forçar a cor do texto
               >
                 <Picker.Item label="Manhã" value="Manhã" />
                 <Picker.Item label="Tarde" value="Tarde" />

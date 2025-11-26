@@ -91,7 +91,8 @@ export async function initDB() {
             funcao TEXT NOT NULL,
             cpf TEXT NOT NULL,
             filialMatriz TEXT,
-            turno TEXT
+            turno TEXT,
+            sexo TEXT
         );
     `);
 
@@ -110,17 +111,25 @@ export async function initDB() {
 // -------------------------------------------------------------
 //  ➕ INSERIR USUÁRIO
 // -------------------------------------------------------------
-export async function inserirUsuario(nome, email, funcao, cpf, filialMatriz, turno) {
+export async function inserirUsuario(nome, email, funcao, cpf, filialMatriz, turno, sexo) {
     const matricula = await gerarMatricula();
 
-    const dados = { matricula, nome, email, funcao, cpf, filialMatriz, turno };
-    await setDoc(doc(dbFirebase, "usuarios", matricula), dados);
+    // Pega o primeiro e segundo nome, remove acentos e caracteres especiais
+    const nomeFormatado = nome
+        .trim()
+        .split(' ')
+        .slice(0, 2)
+        .join('_')
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    const dados = { matricula, nome, email, funcao, cpf, filialMatriz, turno, sexo };
+    await setDoc(doc(dbFirebase, "usuarios", `${matricula}_${nomeFormatado}`), dados);
 
     if (SQLite) {
         await executeSqlAsync(
-            `INSERT INTO usuarios (matricula, nome, email, funcao, cpf, filialMatriz, turno)
-             VALUES (?, ?, ?, ?, ?, ?, ?);`,
-            [matricula, nome, email, funcao, cpf, filialMatriz, turno]
+            `INSERT INTO usuarios (matricula, nome, email, funcao, cpf, filialMatriz, turno, sexo)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+            [matricula, nome, email, funcao, cpf, filialMatriz, turno, sexo]
         );
     }
 
@@ -142,13 +151,23 @@ export async function listarUsuarios() {
 // -------------------------------------------------------------
 //  ✏️ ATUALIZAR USUÁRIO
 // -------------------------------------------------------------
-export async function atualizarUsuario(matricula, nome, email, funcao, cpf, filialMatriz, turno) {
-    await updateDoc(doc(dbFirebase, "usuarios", matricula), { nome, email, funcao, cpf, filialMatriz, turno });
+export async function atualizarUsuario(matricula, nome, email, funcao, cpf, filialMatriz, turno, sexo) {
+    // Pega o primeiro e segundo nome, remove acentos e caracteres especiais
+    const nomeFormatado = nome
+        .trim()
+        .split(' ')
+        .slice(0, 2)
+        .join('_')
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    const docId = `${matricula}_${nomeFormatado}`;
+
+    await updateDoc(doc(dbFirebase, "usuarios", docId), { nome, email, funcao, cpf, filialMatriz, turno, sexo });
 
     if (SQLite) {
         await executeSqlAsync(
-            `UPDATE usuarios SET nome=?, email=?, funcao=?, cpf=?, filialMatriz=?, turno=? WHERE matricula=?`,
-            [nome, email, funcao, cpf, filialMatriz, turno, matricula]
+            `UPDATE usuarios SET nome=?, email=?, funcao=?, cpf=?, filialMatriz=?, turno=?, sexo=? WHERE matricula=?`,
+            [nome, email, funcao, cpf, filialMatriz, turno, sexo, matricula]
         );
     }
 }
@@ -200,8 +219,16 @@ export async function autenticarUsuario(email, cpf) {
 export async function registrarPonto(matricula, tipo) {
     if (!matricula) throw new Error("Matrícula inválida ao registrar ponto.");
 
+    // Helper para formatar a data como YYYY-MM-DD
+    const getISODate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const agora = new Date();
-    const id = `${matricula}_${agora.getTime()}`;
+    const id = `${matricula}_${getISODate(agora)}_${tipo}`; // NOVO FORMATO DE ID
     const dados = {
         id,
         matricula,
