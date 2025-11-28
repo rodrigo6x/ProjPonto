@@ -1,10 +1,36 @@
 {
   "expo": {
+    "name": "Ponto Eletrônico",
+    "slug": "PontoEletronico",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icone.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/icone.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2E5543"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icone.png",
+        "backgroundColor": "#2E5543"
+      },
+      "package": "com.jonathansunqueiroz.PontoEletronico"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "extra": {
       "eas": {
-        "projectId": "6f3aebb7-854b-4481-8770-7614abeb1684"
+        "projectId": "5126efa2-bd22-4409-965f-83ed20334b3f"
       }
-    },
-    "owner": "xgomawo"
+    }
   }
 }
